@@ -6,18 +6,14 @@
     <title>Справочник рыб - FishGuide</title>
     <meta name="description" content="Полный справочник видов рыб в России. Описание, среда обитания, способы ловли и сезонность.">
     
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Core Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
     
-    <!-- Custom Modules -->
     <script src="weather-service.js"></script>
     
     <script>
@@ -31,304 +27,106 @@
                     colors: {
                         'lake-blue': '#1e3a8a',
                         'sunset-orange': '#f97316',
-                        'nature-green': '#059669',
-                        'deep-water': '#0f172a',
-                        'mist-gray': '#64748b',
+                        'forest-green': '#059669',
+                        'water-light': '#bfdbfe',
+                        'sand-light': '#fef3c7'
                     }
                 }
             }
         }
     </script>
-    
-    <style>
-        .fish-card {
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .fish-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        
-        .fish-card.expanded {
-            transform: scale(1.02);
-            z-index: 10;
-        }
-        
-        .category-filter.active {
-            background-color: #1e3a8a;
-            color: white;
-        }
-        
-        .season-indicator {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 4px;
-        }
-        
-        .season-spring { background-color: #22c55e; }
-        .season-summer { background-color: #f59e0b; }
-        .season-autumn { background-color: #dc2626; }
-        .season-winter { background-color: #3b82f6; }
-        
-        .difficulty-easy { color: #22c55e; }
-        .difficulty-medium { color: #f59e0b; }
-        .difficulty-hard { color: #dc2626; }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            backdrop-filter: blur(4px);
-        }
-        
-        .modal.show {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            margin: 20px;
-            animation: modalSlideIn 0.3s ease-out;
-        }
-        
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-    </style>
 </head>
-<body class="font-body bg-slate-50">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-slate-200">
+<body class="bg-gray-50 font-body text-slate-700">
+    
+    <header class="bg-white shadow-md sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">🎣</span>
-                    </div>
-                    <span class="font-display font-bold text-xl text-slate-800">FishGuide</span>
-                </div>
+                <a href="index.html" class="text-2xl font-display font-bold text-lake-blue">FishGuide</a>
                 
-                <div class="hidden md:flex items-center space-x-8">
+                <nav class="hidden md:flex space-x-8">
                     <a href="index.html" class="text-slate-600 hover:text-lake-blue transition-colors">Главная</a>
                     <a href="lakes.html" class="text-slate-600 hover:text-lake-blue transition-colors">Каталог озер</a>
-                    <a href="calculator.html" class="text-slate-600 hover:text-lake-blue transition-colors">Калькулятор</a>
-                    <a href="fish-guide.html" class="text-lake-blue font-medium border-b-2 border-lake-blue pb-1">Справочник</a>
-                </div>
+                    <a href="calculator.html" class="text-slate-600 hover:text-lake-blue transition-colors">Калькулятор снастей</a>
+                    <a href="fish-guide.html" class="text-lake-blue font-semibold border-b-2 border-lake-blue pb-1">Справочник рыб</a>
+                </nav>
                 
-                <div class="md:hidden">
-                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-lake-blue">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-gray-100 transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
             </div>
         </div>
         
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200">
-            <div class="px-4 py-4 space-y-3">
-                <a href="index.html" class="block text-slate-600 hover:text-lake-blue">Главная</a>
-                <a href="lakes.html" class="block text-slate-600 hover:text-lake-blue">Каталог озер</a>
-                <a href="calculator.html" class="block text-slate-600 hover:text-lake-blue">Калькулятор</a>
-                <a href="fish-guide.html" class="block text-lake-blue font-medium">Справочник</a>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-gray-50">Главная</a>
+                <a href="lakes.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-gray-50">Каталог озер</a>
+                <a href="calculator.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-gray-50">Калькулятор снастей</a>
+                <a href="fish-guide.html" class="block px-3 py-2 rounded-md text-base font-medium text-lake-blue bg-gray-50">Справочник рыб</a>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Header Section -->
-    <section class="pt-24 pb-12 bg-gradient-to-br from-lake-blue to-deep-water">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center text-white">
-                <h1 class="font-display text-5xl font-bold mb-4">Справочник рыб</h1>
-                <p class="text-xl text-blue-100 max-w-2xl mx-auto">
-                    Изучите виды рыб обитающие в российских водоемах. 
-                    Узнайте о их повадках, предпочтениях и лучших способах ловли.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Search and Filters Section -->
-    <section class="py-8 bg-white border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col lg:flex-row gap-6 items-center justify-between">
-                <!-- Search Bar -->
-                <div class="flex-1 max-w-md">
+    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <h1 class="text-4xl font-display font-bold text-slate-900 mb-8">Полный Справочник Рыб</h1>
+        
+        <section class="bg-white p-6 rounded-xl shadow-lg mb-12">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+                
+                <div class="w-full md:w-1/3">
+                    <label for="search-input" class="sr-only">Поиск рыбы</label>
                     <div class="relative">
-                        <input 
-                            type="text" 
-                            id="search-input" 
-                            placeholder="Поиск по названию..."
-                            class="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-lake-blue focus:border-transparent"
-                        >
-                        <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
-                            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                        </div>
+                        <input type="text" id="search-input" placeholder="Поиск по названию или описанию..." 
+                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-lake-blue focus:border-lake-blue transition duration-150">
+                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
                     </div>
                 </div>
-
-                <!-- Category Filters -->
-                <div class="flex flex-wrap gap-2">
-                    <button class="category-filter active px-4 py-2 rounded-xl border border-slate-300 text-sm font-medium transition-all duration-300" data-category="all">
-                        Все виды
-                    </button>
-                    <button class="category-filter px-4 py-2 rounded-xl border border-slate-300 text-sm font-medium transition-all duration-300" data-category="predatory">
-                        Хищные
-                    </button>
-                    <button class="category-filter px-4 py-2 rounded-xl border border-slate-300 text-sm font-medium transition-all duration-300" data-category="peaceful">
-                        Мирные
-                    </button>
-                    <button class="category-filter px-4 py-2 rounded-xl border border-slate-300 text-sm font-medium transition-all duration-300" data-category="rare">
-                        Редкие
-                    </button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Fish Grid Section -->
-    <section class="py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between mb-8">
-                <div>
-                    <h2 class="font-display text-2xl font-bold text-slate-800">Найдено видов: <span id="results-count">24</span></h2>
-                    <p class="text-slate-600 mt-1">Кликните на карточку для детальной информации</p>
-                </div>
                 
-                <div class="flex items-center space-x-4">
-                    <span class="text-sm text-slate-600">Сортировать:</span>
-                    <select id="sort-select" class="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-lake-blue focus:border-transparent text-sm">
-                        <option value="name">По названию</option>
-                        <option value="difficulty">По сложности</option>
-                        <option value="popularity">По популярности</option>
+                <div class="w-full md:w-2/3 flex flex-wrap justify-end space-x-2">
+                    <button class="category-filter active bg-lake-blue text-white hover:bg-lake-blue/90 font-medium py-2 px-4 rounded-lg transition-colors duration-150" data-category="all">Все (45)</button>
+                    <button class="category-filter bg-gray-100 text-slate-700 hover:bg-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-150" data-category="predator">Хищные</button>
+                    <button class="category-filter bg-gray-100 text-slate-700 hover:bg-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-150" data-category="peaceful">Мирные</button>
+                    <select id="sort-select" class="bg-gray-100 text-slate-700 hover:bg-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-150 border-none">
+                        <option value="name">Сортировка: По названию</option>
+                        <option value="bestTime">Сортировка: По сезону</option>
                     </select>
                 </div>
             </div>
+        </section>
 
-            <!-- Fish Grid -->
-            <div id="fish-container" class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                <!-- Fish cards will be dynamically generated here -->
-            </div>
+        <section id="fish-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            </section>
+        
+        <div class="text-center mt-12">
+            <p class="text-slate-500"><span id="results-count">45</span> результатов</p>
         </div>
-    </section>
+        
+    </main>
 
-    <!-- Fish Detail Modal -->
-    <div id="fish-modal" class="modal">
-        <div class="modal-content">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h2 id="modal-title" class="font-display text-2xl font-bold text-slate-800"></h2>
-                    <button onclick="closeModal()" class="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center hover:bg-slate-200 transition-colors">
-                        <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+    <div id="fish-modal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300 relative">
+            
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800 transition-colors z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+            
+            <div id="fish-modal-content" class="p-8">
                 </div>
-                
-                <div id="modal-content">
-                    <!-- Modal content will be dynamically generated -->
-                </div>
-            </div>
+            
         </div>
     </div>
-
-    <!-- Tips Section -->
-    <section class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-4xl font-bold text-slate-800 mb-4">Советы по ловле</h2>
-                <p class="text-xl text-slate-600">Профессиональные рекомендации для успешной рыбалки</p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-lake-blue/10 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🌡️</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Температура воды</h3>
-                    <p class="text-slate-600">Следите за температурой воды. Большинство рыб активны при 15-20°C. В жару ищите глубокие участки.</p>
-                </div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-sunset-orange/10 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🌅</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Время суток</h3>
-                    <p class="text-slate-600">Рассвет и закуск - лучшее время для рыбалки. Хищная рыба особенно активна в сумерках.</p>
-                </div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-nature-green/10 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🌿</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Прикормка</h3>
-                    <p class="text-slate-600">Используйте правильную прикормку для целевой рыбы. Не перекармливайте - это может отпугнуть рыбу.</p>
-                </div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🎣</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Проводка</h3>
-                    <p class="text-slate-600">Экспериментируйте с разными видами проводки. Иногда медленная проводка работает лучше быстрой.</p>
-                </div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-pink-100 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🌊</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Погода</h3>
-                    <p class="text-slate-600">Перед рыбалкой проверьте прогноз. Пасмурная погода часто лучше ясной для клева.</p>
-                </div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-indigo-100 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">⏰</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Терпение</h3>
-                    <p class="text-slate-600">Рыбалка требует терпения. Не спешите менять место или снасти - дайте рыбе время подойти.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-slate-800 text-white py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-4 gap-8">
+    
+    <footer class="bg-slate-800 text-white mt-20">
+        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
                 <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
-                            <span class="text-white font-bold text-sm">🎣</span>
-                        </div>
-                        <span class="font-display font-bold text-xl">FishGuide</span>
-                    </div>
-                    <p class="text-slate-300">Ваш надежный спутник в мире рыбалки. Находите лучшие места, получайте прогнозы и улучшайте свои навыки.</p>
+                    <h3 class="font-display font-bold text-2xl mb-4 text-lake-blue">FishGuide</h3>
+                    <p class="text-slate-400 text-sm">Ваш надежный помощник в мире рыбалки.</p>
                 </div>
                 
                 <div>
@@ -336,8 +134,8 @@
                     <ul class="space-y-2">
                         <li><a href="index.html" class="text-slate-300 hover:text-white transition-colors">Главная</a></li>
                         <li><a href="lakes.html" class="text-slate-300 hover:text-white transition-colors">Каталог озер</a></li>
-                        <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор</a></li>
-                        <li><a href="fish-guide.html" class="text-slate-300 hover:text-white transition-colors">Справочник</a></li>
+                        <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор снастей</a></li>
+                        <li><a href="fish-guide.html" class="text-white font-medium transition-colors">Справочник рыб</a></li>
                     </ul>
                 </div>
                 
@@ -367,6 +165,8 @@
         </div>
     </footer>
 
+    <script src="fish-data.js"></script> 
     <script src="fish-guide.js"></script>
+    
 </body>
 </html>
