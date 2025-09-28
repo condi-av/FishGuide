@@ -248,6 +248,18 @@ if (typeof WeatherService === 'undefined') {
       }
       return rec;
     }
+
+    // Добавляем недостающий метод
+    calculatePressureTrend(pressures) {
+      if (!pressures || pressures.length < 2) return 'stable';
+      const first = pressures[0];
+      const last = pressures[pressures.length - 1];
+      const diff = last - first;
+      
+      if (diff > 5) return 'rising';
+      if (diff < -5) return 'falling';
+      return 'stable';
+    }
   }
 
   // ✅ Экспортируем глобально, если ещё не объявлено
