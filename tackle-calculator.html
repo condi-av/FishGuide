@@ -256,196 +256,231 @@
     </footer>
 
     <script src="main.js"></script>
-    <script>
-        // Calculator state
-        let currentStep = 1;
-        let selectedFish = null;
-        let selectedSeason = null;
-        let fishData = [];
+<script>
+    // Calculator state
+    let currentStep = 1;
+    let selectedFish = null;
+    let selectedSeason = null;
 
-        // Initialize calculator
-        function initializeTackleCalculator() {
-            fishData = window.FishGuide?.fishData || [];
-            loadFishOptions();
-            setupEventListeners();
-            
-            // Check for URL parameters
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('fish')) {
-                const fishName = urlParams.get('fish');
-                // Auto-select fish from URL parameter
-                setTimeout(() => {
-                    const fishElement = document.querySelector(`[data-fish="${fishName}"]`);
-                    if (fishElement) {
-                        selectFish(fishElement);
-                    }
-                }, 500);
-            }
+    // Initialize calculator
+    function initializeTackleCalculator() {
+        console.log('Initializing tackle calculator...');
+        const fishData = window.FishGuide?.fishData || [];
+        console.log('Fish data available:', fishData.length);
+        
+        loadFishOptions(fishData);
+        setupEventListeners();
+        
+        // Check for URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('fish')) {
+            const fishName = urlParams.get('fish');
+            console.log('Auto-selecting fish from URL:', fishName);
+            // Auto-select fish from URL parameter
+            setTimeout(() => {
+                const fishElement = document.querySelector(`[data-fish="${fishName}"]`);
+                if (fishElement) {
+                    selectFish(fishElement);
+                } else {
+                    console.log('Fish element not found:', fishName);
+                }
+            }, 500);
+        }
+    }
+
+    // Load fish options
+    function loadFishOptions(fishData) {
+        const predatoryFish = document.getElementById('predatory-fish');
+        const peacefulFish = document.getElementById('peaceful-fish');
+        const universalFish = document.getElementById('universal-fish');
+
+        if (!predatoryFish || !peacefulFish || !universalFish) {
+            console.error('Fish containers not found');
+            return;
         }
 
-        // Load fish options
-        function loadFishOptions() {
-            const predatoryFish = document.getElementById('predatory-fish');
-            const peacefulFish = document.getElementById('peaceful-fish');
-            const universalFish = document.getElementById('universal-fish');
+        const predatory = fishData.filter(fish => fish.type === 'хищная');
+        const peaceful = fishData.filter(fish => fish.type === 'мирная');
+        const universal = ['Щука', 'Окунь', 'Лещ', 'Судак']; // Popular universal fish
 
-            const predatory = fishData.filter(fish => fish.type === 'хищная');
-            const peaceful = fishData.filter(fish => fish.type === 'мирная');
-            const universal = ['Щука', 'Окунь', 'Лещ', 'Судак']; // Popular universal fish
+        predatoryFish.innerHTML = predatory.map(fish => createFishOption(fish)).join('');
+        peacefulFish.innerHTML = peaceful.map(fish => createFishOption(fish)).join('');
+        universalFish.innerHTML = universal.map(fishName => {
+            const fish = fishData.find(f => f.name === fishName) || { name: fishName, type: 'универсальная' };
+            return createFishOption(fish);
+        }).join('');
+    }
 
-            predatoryFish.innerHTML = predatory.map(fish => createFishOption(fish)).join('');
-            peacefulFish.innerHTML = peaceful.map(fish => createFishOption(fish)).join('');
-            universalFish.innerHTML = universal.map(fishName => {
-                const fish = fishData.find(f => f.name === fishName) || { name: fishName, type: 'универсальная' };
-                return createFishOption(fish);
-            }).join('');
-        }
-
-        // Create fish option
-        function createFishOption(fish) {
-            return `
-                <div class="fish-option cursor-pointer p-3 border-2 border-slate-200 rounded-lg hover:border-blue-500 transition-colors" data-fish="${fish.name}">
-                    <div class="flex items-center space-x-3">
-                        <div class="text-2xl">${getFishIcon(fish.type)}</div>
-                        <div>
-                            <div class="font-medium">${fish.name}</div>
-                            <div class="text-sm text-slate-600">${fish.type || 'универсальная'}</div>
-                        </div>
+    // Create fish option
+    function createFishOption(fish) {
+        return `
+            <div class="fish-option cursor-pointer p-3 border-2 border-slate-200 rounded-lg hover:border-blue-500 transition-colors" data-fish="${fish.name}">
+                <div class="flex items-center space-x-3">
+                    <div class="text-2xl">${getFishIcon(fish.type)}</div>
+                    <div>
+                        <div class="font-medium">${fish.name}</div>
+                        <div class="text-sm text-slate-600">${fish.type || 'универсальная'}</div>
                     </div>
                 </div>
-            `;
-        }
+            </div>
+        `;
+    }
 
-        // Get fish icon by type
-        function getFishIcon(type) {
-            switch(type) {
-                case 'хищная': return '🦈';
-                case 'мирная': return '🐟';
-                default: return '🎯';
+    // Get fish icon by type
+    function getFishIcon(type) {
+        switch(type) {
+            case 'хищная': return '🦈';
+            case 'мирная': return '🐟';
+            default: return '🎯';
+        }
+    }
+
+    // Setup event listeners
+    function setupEventListeners() {
+        // Fish selection
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.fish-option')) {
+                selectFish(e.target.closest('.fish-option'));
             }
-        }
+        });
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Fish selection
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.fish-option')) {
-                    selectFish(e.target.closest('.fish-option'));
-                }
-            });
-
-            // Season selection
-            document.addEventListener('click', function(e) {
-                if (e.target.closest('.season-option')) {
-                    selectSeason(e.target.closest('.season-option'));
-                }
-            });
-
-            // Navigation buttons
-            document.getElementById('step1-next').addEventListener('click', () => goToStep(2));
-            document.getElementById('step2-back').addEventListener('click', () => goToStep(1));
-            document.getElementById('step2-next').addEventListener('click', () => goToStep(3));
-            document.getElementById('step3-back').addEventListener('click', () => goToStep(2));
-        }
-
-        // Select fish
-        function selectFish(fishElement) {
-            // Remove previous selection
-            document.querySelectorAll('.fish-option').forEach(el => {
-                el.classList.remove('border-blue-500', 'bg-blue-50');
-                el.classList.add('border-slate-200');
-            });
-
-            // Add selection to clicked element
-            fishElement.classList.remove('border-slate-200');
-            fishElement.classList.add('border-blue-500', 'bg-blue-50');
-
-            selectedFish = fishElement.dataset.fish;
-            document.getElementById('step1-next').disabled = false;
-        }
-
-        // Select season
-        function selectSeason(seasonElement) {
-            // Remove previous selection
-            document.querySelectorAll('.season-option').forEach(el => {
-                el.classList.remove('border-blue-500', 'bg-blue-50');
-                el.classList.add('border-slate-200');
-            });
-
-            // Add selection to clicked element
-            seasonElement.classList.remove('border-slate-200');
-            seasonElement.classList.add('border-blue-500', 'bg-blue-50');
-
-            selectedSeason = seasonElement.dataset.season;
-            document.getElementById('step2-next').disabled = false;
-        }
-
-        // Go to step
-        function goToStep(step) {
-            // Hide all steps
-            document.querySelectorAll('.step-content').forEach(el => {
-                el.classList.add('hidden');
-            });
-
-            // Show target step
-            document.getElementById(`step${step}`).classList.remove('hidden');
-
-            // Update step indicators
-            updateStepIndicators(step);
-
-            // Update progress
-            updateProgress(step);
-
-            // Generate recommendations if going to step 3
-            if (step === 3) {
-                generateRecommendations();
+        // Season selection
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.season-option')) {
+                selectSeason(e.target.closest('.season-option'));
             }
+        });
 
-            currentStep = step;
+        // Navigation buttons
+        const step1Next = document.getElementById('step1-next');
+        const step2Back = document.getElementById('step2-back');
+        const step2Next = document.getElementById('step2-next');
+        const step3Back = document.getElementById('step3-back');
+
+        if (step1Next) step1Next.addEventListener('click', () => goToStep(2));
+        if (step2Back) step2Back.addEventListener('click', () => goToStep(1));
+        if (step2Next) step2Next.addEventListener('click', () => goToStep(3));
+        if (step3Back) step3Back.addEventListener('click', () => goToStep(2));
+    }
+
+    // Select fish
+    function selectFish(fishElement) {
+        // Remove previous selection
+        document.querySelectorAll('.fish-option').forEach(el => {
+            el.classList.remove('border-blue-500', 'bg-blue-50');
+            el.classList.add('border-slate-200');
+        });
+
+        // Add selection to clicked element
+        fishElement.classList.remove('border-slate-200');
+        fishElement.classList.add('border-blue-500', 'bg-blue-50');
+
+        selectedFish = fishElement.dataset.fish;
+        const step1Next = document.getElementById('step1-next');
+        if (step1Next) step1Next.disabled = false;
+        
+        console.log('Selected fish:', selectedFish);
+    }
+
+    // Select season
+    function selectSeason(seasonElement) {
+        // Remove previous selection
+        document.querySelectorAll('.season-option').forEach(el => {
+            el.classList.remove('border-blue-500', 'bg-blue-50');
+            el.classList.add('border-slate-200');
+        });
+
+        // Add selection to clicked element
+        seasonElement.classList.remove('border-slate-200');
+        seasonElement.classList.add('border-blue-500', 'bg-blue-50');
+
+        selectedSeason = seasonElement.dataset.season;
+        const step2Next = document.getElementById('step2-next');
+        if (step2Next) step2Next.disabled = false;
+        
+        console.log('Selected season:', selectedSeason);
+    }
+
+    // Go to step
+    function goToStep(step) {
+        // Hide all steps
+        document.querySelectorAll('.step-content').forEach(el => {
+            el.classList.add('hidden');
+        });
+
+        // Show target step
+        const targetStep = document.getElementById(`step${step}`);
+        if (targetStep) {
+            targetStep.classList.remove('hidden');
         }
 
         // Update step indicators
-        function updateStepIndicators(currentStep) {
-            for (let i = 1; i <= 3; i++) {
-                const indicator = document.getElementById(`step${i}-indicator`);
-                
-                if (i < currentStep) {
-                    indicator.className = 'step-completed w-10 h-10 rounded-full flex items-center justify-center font-semibold';
-                    indicator.innerHTML = '✓';
-                } else if (i === currentStep) {
-                    indicator.className = 'step-active w-10 h-10 rounded-full flex items-center justify-center font-semibold';
-                    indicator.innerHTML = i;
-                } else {
-                    indicator.className = 'step-inactive w-10 h-10 rounded-full flex items-center justify-center font-semibold';
-                    indicator.innerHTML = i;
-                }
-            }
-        }
+        updateStepIndicators(step);
 
         // Update progress
-        function updateProgress(step) {
-            const progress = (step / 3) * 100;
-            document.getElementById('progress-bar').style.width = `${progress}%`;
-            document.getElementById('progress-text').textContent = `Шаг ${step} из 3`;
+        updateProgress(step);
+
+        // Generate recommendations if going to step 3
+        if (step === 3) {
+            generateRecommendations();
         }
 
-        // Generate recommendations
-        function generateRecommendations() {
-            // Update summary
-            const seasonNames = {
-                spring: 'Весна',
-                summer: 'Лето',
-                autumn: 'Осень',
-                winter: 'Зима'
-            };
+        currentStep = step;
+        console.log('Navigated to step:', step);
+    }
 
-            document.getElementById('summary-fish').textContent = selectedFish;
-            document.getElementById('summary-season').textContent = seasonNames[selectedSeason];
-
-            // Generate recommendations based on fish and season
-            const recommendations = getRecommendations(selectedFish, selectedSeason);
+    // Update step indicators
+    function updateStepIndicators(currentStep) {
+        for (let i = 1; i <= 3; i++) {
+            const indicator = document.getElementById(`step${i}-indicator`);
+            if (!indicator) continue;
             
-            const container = document.getElementById('recommendations-container');
+            if (i < currentStep) {
+                indicator.className = 'step-completed w-10 h-10 rounded-full flex items-center justify-center font-semibold';
+                indicator.innerHTML = '✓';
+            } else if (i === currentStep) {
+                indicator.className = 'step-active w-10 h-10 rounded-full flex items-center justify-center font-semibold';
+                indicator.innerHTML = i;
+            } else {
+                indicator.className = 'step-inactive w-10 h-10 rounded-full flex items-center justify-center font-semibold';
+                indicator.innerHTML = i;
+            }
+        }
+    }
+
+    // Update progress
+    function updateProgress(step) {
+        const progress = (step / 3) * 100;
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        
+        if (progressBar) progressBar.style.width = `${progress}%`;
+        if (progressText) progressText.textContent = `Шаг ${step} из 3`;
+    }
+
+    // Generate recommendations
+    function generateRecommendations() {
+        console.log('Generating recommendations for:', selectedFish, selectedSeason);
+        
+        // Update summary
+        const seasonNames = {
+            spring: 'Весна',
+            summer: 'Лето',
+            autumn: 'Осень',
+            winter: 'Зима'
+        };
+
+        const summaryFish = document.getElementById('summary-fish');
+        const summarySeason = document.getElementById('summary-season');
+        
+        if (summaryFish) summaryFish.textContent = selectedFish;
+        if (summarySeason) summarySeason.textContent = seasonNames[selectedSeason];
+
+        // Generate recommendations based on fish and season
+        const recommendations = getRecommendations(selectedFish, selectedSeason);
+        
+        const container = document.getElementById('recommendations-container');
+        if (container) {
             container.innerHTML = recommendations.map(rec => createRecommendationCard(rec)).join('');
 
             // Animate recommendations
@@ -460,170 +495,176 @@
                 });
             }
         }
+    }
 
-        // Get recommendations
-        function getRecommendations(fish, season) {
-            const recommendations = {
-                'Щука': {
-                    rod: { name: 'Спиннинг среднего класса', length: '2.1-2.4м', power: 'Medium-Heavy', price: 'от 3000₽' },
-                    reel: { name: 'Безынерционная катушка', size: '3000-4000', ratio: '5.2:1-6.2:1', price: 'от 2000₽' },
-                    line: { name: 'Плетеная леска', diameter: '0.20-0.25мм', strength: '15-20кг', price: 'от 500₽' },
-                    lures: ['Крупные воблеры', 'Силиконовые приманки', 'Блесны', 'Попперы'],
-                    tips: 'Лучшее время - раннее утро и вечер. Используйте проводку с паузами.'
-                },
-                'Окунь': {
-                    rod: { name: 'Легкий спиннинг', length: '1.8-2.1м', power: 'Light-Medium', price: 'от 2000₽' },
-                    reel: { name: 'Безынерционная катушка', size: '2000-3000', ratio: '5.8:1-6.4:1', price: 'от 1500₽' },
-                    line: { name: 'Плетеная леска', diameter: '0.12-0.18мм', strength: '8-12кг', price: 'от 400₽' },
-                    lures: ['Мелкие воблеры', 'Микроблесны', 'Силиконовые червяки', 'Твистеры'],
-                    tips: 'Активен круглый год. Зимой отлично клюет на блесны.'
-                },
-                'Лещ': {
-                    rod: { name: 'Фидерное удилище', length: '3.6-4.2м', power: 'Medium', price: 'от 2500₽' },
-                    reel: { name: 'Безынерционная катушка', size: '4000-5000', ratio: '4.8:1-5.5:1', price: 'от 1800₽' },
-                    line: { name: 'Монофильная леска', diameter: '0.20-0.25мм', strength: '6-10кг', price: 'от 300₽' },
-                    lures: ['Опарыш', 'Червь', 'Кукуруза', 'Тесто'],
-                    tips: 'Требует точной прикормки. Лучшее время - утро и вечер.'
-                },
-                'Судак': {
-                    rod: { name: 'Спиннинг', length: '2.1-2.4м', power: 'Medium', price: 'от 2800₽' },
-                    reel: { name: 'Безынерционная катушка', size: '2500-3500', ratio: '5.2:1-6.0:1', price: 'от 1700₽' },
-                    line: { name: 'Плетеная леска', diameter: '0.18-0.22мм', strength: '12-16кг', price: 'от 450₽' },
-                    lures: ['Джиговые приманки', 'Воблеры', 'Блесны', 'Твистеры'],
-                    tips: 'Лучшее время - сумерки и ночь. Используйте джиговую проводку.'
-                },
-                'Язь': {
-                    rod: { name: 'Поплавочное удилище', length: '3.0-4.5м', power: 'Light-Medium', price: 'от 1500₽' },
-                    reel: { name: 'Безынерционная катушка', size: '3000-4000', ratio: '5.0:1-5.8:1', price: 'от 1200₽' },
-                    line: { name: 'Монофильная леска', diameter: '0.18-0.22мм', strength: '8-12кг', price: 'от 350₽' },
-                    lures: ['Червь', 'Опарыш', 'Кукуруза', 'Живец'],
-                    tips: 'Очень сильная рыба. Используйте надежные снасти.'
-                },
-                'Плотва': {
-                    rod: { name: 'Легкая поплавочная удочка', length: '2.7-3.6м', power: 'Light', price: 'от 1000₽' },
-                    reel: { name: 'Безынерционная катушка', size: '1000-2500', ratio: '5.2:1-5.8:1', price: 'от 800₽' },
-                    line: { name: 'Монофильная леска', diameter: '0.10-0.14мм', strength: '3-6кг', price: 'от 200₽' },
-                    lures: ['Мотыль', 'Опарыш', 'Тесто', 'Короед'],
-                    tips: 'Отличная наживка для хищной рыбы. Клюет круглый год.'
-                }
-            };
-
-            const baseRec = recommendations[fish] || recommendations['Окунь'];
-            
-            // Season adjustments
-            const seasonAdjustments = {
-                winter: {
-                    line: { name: 'Леска для зимней рыбалки', diameter: '0.12-0.16мм', strength: '5-8кг', price: 'от 300₽' },
-                    lures: ['Блесны', 'Балансиры', 'Мормышки'],
-                    tips: 'Используйте зимние снасти. Лунки лучше сверлить заранее.'
-                },
-                spring: {
-                    tips: 'Рыба активна после зимы. Используйте яркие приманки.'
-                },
-                autumn: {
-                    tips: 'Жор перед зимовкой. Рыба берет активно.'
-                }
-            };
-
-            const adjustedRec = { ...baseRec };
-            if (seasonAdjustments[season]) {
-                Object.assign(adjustedRec, seasonAdjustments[season]);
+    // Get recommendations
+    function getRecommendations(fish, season) {
+        const recommendations = {
+            'Щука': {
+                rod: { name: 'Спиннинг среднего класса', length: '2.1-2.4м', power: 'Medium-Heavy', price: 'от 3000₽' },
+                reel: { name: 'Безынерционная катушка', size: '3000-4000', ratio: '5.2:1-6.2:1', price: 'от 2000₽' },
+                line: { name: 'Плетеная леска', diameter: '0.20-0.25мм', strength: '15-20кг', price: 'от 500₽' },
+                lures: ['Крупные воблеры', 'Силиконовые приманки', 'Блесны', 'Попперы'],
+                tips: 'Лучшее время - раннее утро и вечер. Используйте проводку с паузами.'
+            },
+            'Окунь': {
+                rod: { name: 'Легкий спиннинг', length: '1.8-2.1м', power: 'Light-Medium', price: 'от 2000₽' },
+                reel: { name: 'Безынерционная катушка', size: '2000-3000', ratio: '5.8:1-6.4:1', price: 'от 1500₽' },
+                line: { name: 'Плетеная леска', diameter: '0.12-0.18мм', strength: '8-12кг', price: 'от 400₽' },
+                lures: ['Мелкие воблеры', 'Микроблесны', 'Силиконовые червяки', 'Твистеры'],
+                tips: 'Активен круглый год. Зимой отлично клюет на блесны.'
+            },
+            'Лещ': {
+                rod: { name: 'Фидерное удилище', length: '3.6-4.2м', power: 'Medium', price: 'от 2500₽' },
+                reel: { name: 'Безынерционная катушка', size: '4000-5000', ratio: '4.8:1-5.5:1', price: 'от 1800₽' },
+                line: { name: 'Монофильная леска', diameter: '0.20-0.25мм', strength: '6-10кг', price: 'от 300₽' },
+                lures: ['Опарыш', 'Червь', 'Кукуруза', 'Тесто'],
+                tips: 'Требует точной прикормки. Лучшее время - утро и вечер.'
+            },
+            'Судак': {
+                rod: { name: 'Спиннинг', length: '2.1-2.4м', power: 'Medium', price: 'от 2800₽' },
+                reel: { name: 'Безынерционная катушка', size: '2500-3500', ratio: '5.2:1-6.0:1', price: 'от 1700₽' },
+                line: { name: 'Плетеная леска', diameter: '0.18-0.22мм', strength: '12-16кг', price: 'от 450₽' },
+                lures: ['Джиговые приманки', 'Воблеры', 'Блесны', 'Твистеры'],
+                tips: 'Лучшее время - сумерки и ночь. Используйте джиговую проводку.'
+            },
+            'Язь': {
+                rod: { name: 'Поплавочное удилище', length: '3.0-4.5м', power: 'Light-Medium', price: 'от 1500₽' },
+                reel: { name: 'Безынерционная катушка', size: '3000-4000', ratio: '5.0:1-5.8:1', price: 'от 1200₽' },
+                line: { name: 'Монофильная леска', diameter: '0.18-0.22мм', strength: '8-12кг', price: 'от 350₽' },
+                lures: ['Червь', 'Опарыш', 'Кукуруза', 'Живец'],
+                tips: 'Очень сильная рыба. Используйте надежные снасти.'
+            },
+            'Плотва': {
+                rod: { name: 'Легкая поплавочная удочка', length: '2.7-3.6м', power: 'Light', price: 'от 1000₽' },
+                reel: { name: 'Безынерционная катушка', size: '1000-2500', ratio: '5.2:1-5.8:1', price: 'от 800₽' },
+                line: { name: 'Монофильная леска', diameter: '0.10-0.14мм', strength: '3-6кг', price: 'от 200₽' },
+                lures: ['Мотыль', 'Опарыш', 'Тесто', 'Короед'],
+                tips: 'Отличная наживка для хищной рыбы. Клюет круглый год.'
             }
+        };
 
-            return [
-                {
-                    title: '🎣 Удилище',
-                    icon: '🎣',
-                    items: [adjustedRec.rod],
-                    description: 'Основной элемент снасти'
-                },
-                {
-                    title: '🔄 Катушка',
-                    icon: '🔄',
-                    items: [adjustedRec.reel],
-                    description: 'Для намотки лески'
-                },
-                {
-                    title: '🧵 Леска',
-                    icon: '🧵',
-                    items: [adjustedRec.line],
-                    description: 'Связующее звено'
-                },
-                {
-                    title: '🪝 Приманки',
-                    icon: '🪝',
-                    items: adjustedRec.lures.map(lure => ({ name: lure })),
-                    description: adjustedRec.tips
-                }
-            ];
+        const baseRec = recommendations[fish] || recommendations['Окунь'];
+        
+        // Season adjustments
+        const seasonAdjustments = {
+            winter: {
+                line: { name: 'Леска для зимней рыбалки', diameter: '0.12-0.16мм', strength: '5-8кг', price: 'от 300₽' },
+                lures: ['Блесны', 'Балансиры', 'Мормышки'],
+                tips: 'Используйте зимние снасти. Лунки лучше сверлить заранее.'
+            },
+            spring: {
+                tips: 'Рыба активна после зимы. Используйте яркие приманки.'
+            },
+            autumn: {
+                tips: 'Жор перед зимовкой. Рыба берет активно.'
+            }
+        };
+
+        const adjustedRec = { ...baseRec };
+        if (seasonAdjustments[season]) {
+            Object.assign(adjustedRec, seasonAdjustments[season]);
         }
 
-        // Create recommendation card
-        function createRecommendationCard(rec) {
-            return `
-                <div class="recommendation-card bg-white rounded-xl shadow-lg p-6" style="opacity: 0;">
-                    <div class="flex items-center mb-4">
-                        <div class="text-3xl mr-4">${rec.icon}</div>
-                        <h3 class="text-2xl font-bold text-slate-800">${rec.title}</h3>
-                    </div>
-                    <p class="text-slate-600 mb-6">${rec.description}</p>
-                    
-                    <div class="grid gap-4">
-                        ${rec.items.map(item => `
-                            <div class="bg-slate-50 rounded-lg p-4">
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <div class="font-semibold text-slate-800">${item.name}</div>
-                                        ${item.length ? `<div class="text-sm text-slate-600">Длина: ${item.length}</div>` : ''}
-                                        ${item.power ? `<div class="text-sm text-slate-600">Тест: ${item.power}</div>` : ''}
-                                        ${item.diameter ? `<div class="text-sm text-slate-600">Диаметр: ${item.diameter}</div>` : ''}
-                                        ${item.strength ? `<div class="text-sm text-slate-600">Прочность: ${item.strength}</div>` : ''}
-                                    </div>
-                                    ${item.price ? `<div class="text-lg font-bold text-green-600">${item.price}</div>` : ''}
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
+        return [
+            {
+                title: '🎣 Удилище',
+                icon: '🎣',
+                items: [adjustedRec.rod],
+                description: 'Основной элемент снасти'
+            },
+            {
+                title: '🔄 Катушка',
+                icon: '🔄',
+                items: [adjustedRec.reel],
+                description: 'Для намотки лески'
+            },
+            {
+                title: '🧵 Леска',
+                icon: '🧵',
+                items: [adjustedRec.line],
+                description: 'Связующее звено'
+            },
+            {
+                title: '🪝 Приманки',
+                icon: '🪝',
+                items: adjustedRec.lures.map(lure => ({ name: lure })),
+                description: adjustedRec.tips
+            }
+        ];
+    }
+
+    // Create recommendation card
+    function createRecommendationCard(rec) {
+        return `
+            <div class="recommendation-card bg-white rounded-xl shadow-lg p-6" style="opacity: 0;">
+                <div class="flex items-center mb-4">
+                    <div class="text-3xl mr-4">${rec.icon}</div>
+                    <h3 class="text-2xl font-bold text-slate-800">${rec.title}</h3>
                 </div>
-            `;
-        }
+                <p class="text-slate-600 mb-6">${rec.description}</p>
+                
+                <div class="grid gap-4">
+                    ${rec.items.map(item => `
+                        <div class="bg-slate-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <div class="font-semibold text-slate-800">${item.name}</div>
+                                    ${item.length ? `<div class="text-sm text-slate-600">Длина: ${item.length}</div>` : ''}
+                                    ${item.power ? `<div class="text-sm text-slate-600">Тест: ${item.power}</div>` : ''}
+                                    ${item.diameter ? `<div class="text-sm text-slate-600">Диаметр: ${item.diameter}</div>` : ''}
+                                    ${item.strength ? `<div class="text-sm text-slate-600">Прочность: ${item.strength}</div>` : ''}
+                                </div>
+                                ${item.price ? `<div class="text-lg font-bold text-green-600">${item.price}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
 
-        // Reset calculator
-        function resetCalculator() {
-            selectedFish = null;
-            selectedSeason = null;
-            
-            // Reset selections
-            document.querySelectorAll('.fish-option').forEach(el => {
-                el.classList.remove('border-blue-500', 'bg-blue-50');
-                el.classList.add('border-slate-200');
-            });
-            
-            document.querySelectorAll('.season-option').forEach(el => {
-                el.classList.remove('border-blue-500', 'bg-blue-50');
-                el.classList.add('border-slate-200');
-            });
-            
-            // Disable buttons
-            document.getElementById('step1-next').disabled = true;
-            document.getElementById('step2-next').disabled = true;
-            
-            // Go to first step
-            goToStep(1);
-        }
+    // Reset calculator
+    function resetCalculator() {
+        selectedFish = null;
+        selectedSeason = null;
+        
+        // Reset selections
+        document.querySelectorAll('.fish-option').forEach(el => {
+            el.classList.remove('border-blue-500', 'bg-blue-50');
+            el.classList.add('border-slate-200');
+        });
+        
+        document.querySelectorAll('.season-option').forEach(el => {
+            el.classList.remove('border-blue-500', 'bg-blue-50');
+            el.classList.add('border-slate-200');
+        });
+        
+        // Disable buttons
+        const step1Next = document.getElementById('step1-next');
+        const step2Next = document.getElementById('step2-next');
+        if (step1Next) step1Next.disabled = true;
+        if (step2Next) step2Next.disabled = true;
+        
+        // Go to first step
+        goToStep(1);
+        console.log('Calculator reset');
+    }
 
-        // Mobile menu toggle
-        function toggleMobileMenu() {
-            const menu = document.getElementById('mobile-menu');
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobile-menu');
+        if (menu) {
             menu.classList.toggle('hidden');
         }
+    }
 
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Tackle calculator page loaded, waiting for data...');
-            
-            // The main.js will automatically call initializeTackleCalculator when data is ready
-        });
-    </script>
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Tackle calculator page loaded, waiting for data...');
+        
+        // The main.js will automatically call initializeTackleCalculator when data is ready
+    });
+</script>
 </body>
 </html>
