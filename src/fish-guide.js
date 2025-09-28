@@ -1,7 +1,8 @@
 // Fish guide page functionality
 class FishGuidePage {
     constructor() {
-        this.fishData = this.getFishData();
+        // [ИСПРАВЛЕНИЕ: Теперь getFishData() возвращает данные из внешнего файла]
+        this.fishData = this.getFishData(); 
         this.filteredFish = [...this.fishData];
         this.currentCategory = 'all';
         this.currentSort = 'name';
@@ -16,9 +17,21 @@ class FishGuidePage {
         this.initSort();
         this.renderFishGrid();
         this.updateResultsCount();
+        // Убедимся, что при загрузке страницы показываем, сколько всего видов
+        console.log(`FishGuide инициализирован. Найдено ${this.fishData.length} видов рыб.`); 
     }
 
-    // Mobile menu functionality
+    // [КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ЭКСПЕРТА] - Метод для получения данных
+    getFishData() { 
+        // Глобальная переменная fishGuideData должна быть загружена из src/fish-data.js ПЕРЕД этим скриптом!
+        if (typeof fishGuideData !== 'undefined') {
+            return fishGuideData;
+        }
+        console.error('Ошибка: Глобальная переменная fishGuideData не найдена. Подключите src/fish-data.js ПЕРЕД fish-guide.js!');
+        return [];
+    }
+
+    // Mobile menu functionality (оставлено без изменений)
     initMobileMenu() {
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -46,12 +59,13 @@ class FishGuidePage {
         const filterButtons = document.querySelectorAll('.category-filter');
         filterButtons.forEach(button => {
             button.addEventListener('click', (e) => {
-                // Update active state
-                filterButtons.forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
+                const category = e.currentTarget.dataset.category;
+                this.currentCategory = category;
                 
-                // Update current category
-                this.currentCategory = e.target.dataset.category;
+                // Update active state
+                filterButtons.forEach(btn => btn.classList.remove('bg-lake-blue', 'text-white'));
+                e.currentTarget.classList.add('bg-lake-blue', 'text-white');
+
                 this.applyFilters();
             });
         });
@@ -67,522 +81,151 @@ class FishGuidePage {
             });
         }
     }
-
-    // Apply all filters and search
+    
+    // Apply all filters and sort
     applyFilters() {
-        let filtered = [...this.fishData];
+        let fish = this.fishData;
 
-        // Apply category filter
+        // 1. Фильтр по категории
         if (this.currentCategory !== 'all') {
-            filtered = filtered.filter(fish => fish.category === this.currentCategory);
+            fish = fish.filter(f => f.category === this.currentCategory);
         }
 
-        // Apply search filter
+        // 2. Поиск по имени и описанию
         if (this.searchQuery) {
-            filtered = filtered.filter(fish => 
-                fish.name.toLowerCase().includes(this.searchQuery) ||
-                fish.scientificName.toLowerCase().includes(this.searchQuery) ||
-                fish.description.toLowerCase().includes(this.searchQuery) ||
-                fish.habitat.toLowerCase().includes(this.searchQuery)
+            fish = fish.filter(f => 
+                f.name.toLowerCase().includes(this.searchQuery) || 
+                f.description.toLowerCase().includes(this.searchQuery)
             );
         }
 
-        // Apply sorting
-        filtered.sort((a, b) => {
-            switch (this.currentSort) {
-                case 'name':
-                    return a.name.localeCompare(b.name);
-                case 'difficulty':
-                    const difficultyOrder = { 'easy': 1, 'medium': 2, 'hard': 3 };
-                    return difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
-                case 'popularity':
-                    return b.popularity - a.popularity;
-                default:
-                    return 0;
+        // 3. Сортировка
+        fish.sort((a, b) => {
+            if (this.currentSort === 'name') {
+                return a.name.localeCompare(b.name, 'ru', { sensitivity: 'base' });
             }
+            if (this.currentSort === 'category') {
+                return a.category.localeCompare(b.category);
+            }
+            return 0; // default
         });
 
-        this.filteredFish = filtered;
+        this.filteredFish = fish;
         this.renderFishGrid();
         this.updateResultsCount();
     }
 
-    // Render fish grid
+    // Render the fish grid
     renderFishGrid() {
-        const container = document.getElementById('fish-container');
-        if (!container) return;
+        const gridContainer = document.getElementById('fish-grid');
+        if (!gridContainer) return;
 
-        container.innerHTML = '';
+        gridContainer.innerHTML = ''; 
 
-        this.filteredFish.forEach((fish, index) => {
-            const fishCard = this.createFishCard(fish, index);
-            container.appendChild(fishCard);
-        });
+        if (this.filteredFish.length === 0) {
+            gridContainer.innerHTML = this.renderEmptyState();
+            return;
+        }
 
-        // Animate cards
-        anime({
-            targets: '.fish-card',
-            opacity: [0, 1],
-            translateY: [20, 0],
-            delay: anime.stagger(100),
-            duration: 600,
-            easing: 'easeOutQuad'
+        this.filteredFish.forEach(fish => {
+            gridContainer.innerHTML += this.renderFishCard(fish);
         });
     }
-
-    // Create fish card element
-    createFishCard(fish, index) {
-        const card = document.createElement('div');
-        card.className = 'fish-card bg-white rounded-2xl shadow-lg overflow-hidden';
-        card.style.opacity = '0';
-        
-        const difficultyColors = {
-            easy: 'difficulty-easy',
-            medium: 'difficulty-medium',
-            hard: 'difficulty-hard'
+    
+    // [ДОБАВЛЕНО] - Генерация HTML для карточки рыбы
+    renderFishCard(fish) {
+        const categoryMap = {
+            'predator': 'Хищник',
+            'peaceful': 'Мирная рыба'
         };
 
-        const difficultyLabels = {
-            easy: 'Легко',
-            medium: 'Средне',
-            hard: 'Сложно'
-        };
+        const categoryText = categoryMap[fish.category] || 'Неизвестно';
+        const colorClass = fish.category === 'predator' ? 'bg-sunset-orange/10 text-sunset-orange' : 'bg-accent-green/10 text-accent-green';
 
-        card.innerHTML = `
-            <div class="h-48 bg-gradient-to-br ${fish.gradient} relative">
-                <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-6xl">${fish.emoji}</span>
-                </div>
-                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                    <span class="text-sm font-semibold text-slate-700">${fish.popularity}/5 ⭐</span>
-                </div>
-                <div class="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                    <span class="text-xs font-medium text-slate-700">${fish.category === 'predatory' ? 'Хищная' : fish.category === 'peaceful' ? 'Мирная' : 'Редкая'}</span>
-                </div>
-            </div>
-            
-            <div class="p-6">
-                <h3 class="font-display text-xl font-bold text-slate-800 mb-2">${fish.name}</h3>
-                <p class="text-sm text-slate-500 mb-3 italic">${fish.scientificName}</p>
-                
-                <div class="space-y-2 mb-4">
-                    <div class="flex items-center text-sm text-slate-600">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                        </svg>
-                        ${fish.habitat}
+        // Добавляем обработчик onclick для открытия модального окна
+        return `
+            <div class="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] cursor-pointer" onclick="showFishDetails('${fish.id}')">
+                <div class="relative overflow-hidden h-48 rounded-t-xl bg-gray-100">
+                    <div class="flex items-center justify-center h-full text-6xl text-slate-400">
+                        ${fish.icon || '🐟'}
                     </div>
-                    <div class="flex items-center text-sm text-slate-600">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                        </svg>
-                        <span class="${difficultyColors[fish.difficulty]}">${difficultyLabels[fish.difficulty]}</span>
+                    <span class="absolute top-3 right-3 ${colorClass} text-xs font-semibold px-3 py-1 rounded-full">${categoryText}</span>
+                </div>
+                <div class="p-5">
+                    <h2 class="text-2xl font-display font-bold text-slate-900 mb-2">${fish.name}</h2>
+                    <p class="text-sm text-slate-600 line-clamp-2">${fish.description.split('.')[0]}.</p>
+                    <div class="mt-4 flex justify-between items-center">
+                        <span class="text-sm font-semibold text-lake-blue">${fish.season.join(', ')}</span>
+                        <button class="text-sm font-medium text-slate-500 hover:text-lake-blue transition-colors">Подробнее →</button>
                     </div>
                 </div>
-                
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-sm text-slate-600">Сезон:</span>
-                        <div class="flex space-x-1">
-                            ${fish.seasons.map(season => `
-                                <div class="season-indicator season-${season}" title="${this.getSeasonName(season)}"></div>
-                            `).join('')}
-                        </div>
-                    </div>
-                </div>
-                
-                <p class="text-sm text-slate-600 mb-4 line-clamp-3">${fish.description}</p>
-                
-                <button onclick="showFishDetails('${fish.id}')" class="w-full bg-lake-blue hover:bg-blue-800 text-white px-4 py-2 rounded-xl font-semibold transition-all duration-300">
-                    Подробнее
-                </button>
             </div>
         `;
-
-        return card;
     }
 
-    // Get season name
-    getSeasonName(season) {
-        const seasonNames = {
-            spring: 'Весна',
-            summer: 'Лето',
-            autumn: 'Осень',
-            winter: 'Зима'
-        };
-        return seasonNames[season] || season;
-    }
-
-    // Update results count
+    // Update results counter
     updateResultsCount() {
         const countElement = document.getElementById('results-count');
         if (countElement) {
             countElement.textContent = this.filteredFish.length;
         }
     }
-
-    // Get fish data
-    getFishData() {
-        return [
-            {
-                id: 'pike',
-                name: 'Щука',
-                scientificName: 'Esox lucius',
-                emoji: '🐟',
-                gradient: 'from-blue-400 to-blue-600',
-                category: 'predatory',
-                difficulty: 'medium',
-                popularity: 5,
-                seasons: ['spring', 'autumn', 'winter'],
-                habitat: 'Реки, озера, водохранилища',
-                description: 'Крупная хищная рыба с вытянутым телом и острыми зубами. Известна своей агрессивностью и силой.',
-                size: 'До 150 см, вес до 35 кг',
-                lifespan: '15-25 лет',
-                diet: 'Рыба, лягушки, мелкие млекопитающие',
-                bestBait: 'Воблеры, блесны, живец',
-                bestTime: 'Рассвет и закуск',
-                tips: 'Лучше всего ловить в проводку с быстрой скоростью. Используйте металлические поводки.',
-                regulations: 'Минимальный размер 45 см в большинстве регионов'
-            },
-            {
-                id: 'perch',
-                name: 'Окунь',
-                scientificName: 'Perca fluviatilis',
-                emoji: '🐠',
-                gradient: 'from-orange-400 to-red-500',
-                category: 'predatory',
-                difficulty: 'easy',
-                popularity: 5,
-                seasons: ['spring', 'summer', 'autumn', 'winter'],
-                habitat: 'Реки, озера, пруды',
-                description: 'Мелкая хищная рыба с характерными полосами на теле. Очень активна и распространена.',
-                size: 'До 50 см, обычно 15-25 см',
-                lifespan: '8-12 лет',
-                diet: 'Мелкая рыба, рачки, насекомые',
-                bestBait: 'Мормышки, блесны, черви',
-                bestTime: 'Весь день, особенно утро',
-                tips: 'Окунь любит стайную ловлю. Найдите одного - найдете десяток.',
-                regulations: 'Без ограничений по размеру в большинстве регионов'
-            },
-            {
-                id: 'carp',
-                name: 'Карп',
-                scientificName: 'Cyprinus carpio',
-                emoji: '🐡',
-                gradient: 'from-green-400 to-green-600',
-                category: 'peaceful',
-                difficulty: 'medium',
-                popularity: 4,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Озера, пруды, медленные реки',
-                description: 'Крупная мирная рыба с усиками. Очень осторожна и требует терпения в ловле.',
-                size: 'До 120 см, вес до 40 кг',
-                lifespan: '20-50 лет',
-                diet: 'Растительная пища, моллюски, черви',
-                bestBait: 'Кукуруза, бойлы, черви',
-                bestTime: 'Ночь и раннее утро',
-                tips: 'Карп очень осторожен. Минимальный шум и качественная прикормка обязательны.',
-                regulations: 'Минимальный размер 30-50 см в зависимости от региона'
-            },
-            {
-                id: 'bream',
-                name: 'Лещ',
-                scientificName: 'Abramis brama',
-                emoji: '🐟',
-                gradient: 'from-purple-400 to-purple-600',
-                category: 'peaceful',
-                difficulty: 'easy',
-                popularity: 4,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Реки, озера, водохранилища',
-                description: 'Высокая сжатая рыба серебристого цвета. Ценится за вкусное мясо и активный клев.',
-                size: 'До 80 см, вес до 8 кг',
-                lifespan: '15-20 лет',
-                diet: 'Черви, моллюски, растительная пища',
-                bestBait: 'Черви, мотыль, опарыш',
-                bestTime: 'Утро и вечер',
-                tips: 'Лещ предпочитает глубокие участки с течением. Используйте фидерную снасть.',
-                regulations: 'Без ограничений по размеру в большинстве регионов'
-            },
-            {
-                id: 'salmon',
-                name: 'Лосось',
-                scientificName: 'Salmo salar',
-                emoji: '🐟',
-                gradient: 'from-pink-400 to-red-500',
-                category: 'predatory',
-                difficulty: 'hard',
-                popularity: 5,
-                seasons: ['summer', 'autumn'],
-                habitat: 'Северные реки и озера',
-                description: 'Ценная промысловая рыба, мигрирующая между морем и пресной водой.',
-                size: 'До 150 см, вес до 40 кг',
-                lifespan: '3-8 лет',
-                diet: 'Рыба, ракообразные, насекомые',
-                bestBait: 'Мушки, блесны, воблеры',
-                bestTime: 'Рассвет и закуск',
-                tips: 'Требует специальной лицензии. Лучше всего ловить нахлыстом в чистой воде.',
-                regulations: 'Требуется специальная лицензия, строгие ограничения'
-            },
-            {
-                id: 'catfish',
-                name: 'Сом',
-                scientificName: 'Silurus glanis',
-                emoji: '🐟',
-                gradient: 'from-gray-400 to-gray-600',
-                category: 'predatory',
-                difficulty: 'hard',
-                popularity: 4,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Крупные реки и озера',
-                description: 'Крупная хищная рыба с усиками. Активна ночью и предпочитает глубокие ямы.',
-                size: 'До 500 см, вес до 300 кг',
-                lifespan: '30-60 лет',
-                diet: 'Рыба, лягушки, птицы, мелкие млекопитающие',
-                bestBait: 'Крупные воблеры, силикон, живец',
-                bestTime: 'Ночь',
-                tips: 'Сом - ночной хищник. Используйте крупные приманки и мощную снасть.',
-                regulations: 'Минимальный размер 70-100 см в зависимости от региона'
-            },
-            {
-                id: 'pikeperch',
-                name: 'Судак',
-                scientificName: 'Sander lucioperca',
-                emoji: '🐟',
-                gradient: 'from-yellow-400 to-orange-500',
-                category: 'predatory',
-                difficulty: 'medium',
-                popularity: 4,
-                seasons: ['spring', 'autumn', 'winter'],
-                habitat: 'Реки, озера, водохранилища',
-                description: 'Хищная рыба с острыми зубами. Ценится за вкусное белое мясо.',
-                size: 'До 130 см, вес до 20 кг',
-                lifespan: '10-20 лет',
-                diet: 'Рыба, ракообразные',
-                bestBait: 'Воблеры, блесны, твистеры',
-                bestTime: 'Ночь и раннее утро',
-                tips: 'Судак любит глубокие ямы и перекаты. Используйте приманки на дне.',
-                regulations: 'Минимальный размер 40-50 см в зависимости от региона'
-            },
-            {
-                id: 'crucian',
-                name: 'Карась',
-                scientificName: 'Carassius carassius',
-                emoji: '🐠',
-                gradient: 'from-amber-400 to-orange-500',
-                category: 'peaceful',
-                difficulty: 'easy',
-                popularity: 3,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Пруды, озера, медленные реки',
-                description: 'Мирная рыба золотистого цвета. Очень вынослива и распространена.',
-                size: 'До 45 см, обычно 15-25 см',
-                lifespan: '10-15 лет',
-                diet: 'Растительная пища, черви, насекомые',
-                bestBait: 'Черви, хлеб, кукуруза',
-                bestTime: 'Утро и вечер',
-                tips: 'Карась неприхотлив и клюет на простые насадки. Отличная рыба для начинающих.',
-                regulations: 'Без ограничений по размеру в большинстве регионов'
-            },
-            {
-                id: 'roach',
-                name: 'Плотва',
-                scientificName: 'Rutilus rutilus',
-                emoji: '🐟',
-                gradient: 'from-teal-400 to-cyan-500',
-                category: 'peaceful',
-                difficulty: 'easy',
-                popularity: 3,
-                seasons: ['spring', 'summer', 'autumn', 'winter'],
-                habitat: 'Реки, озера, пруды',
-                description: 'Распространенная мирная рыба серебристого цвета с красными плавниками.',
-                size: 'До 50 см, обычно 10-20 см',
-                lifespan: '8-15 лет',
-                diet: 'Растительная пища, мелкие беспозвоночные',
-                bestBait: 'Мотыль, червь, хлеб',
-                bestTime: 'Весь день',
-                tips: 'Плотва клюет круглый год. Зимой активна и хорошо ловится на мормышки.',
-                regulations: 'Без ограничений по размеру в большинстве регионов'
-            },
-            {
-                id: 'ide',
-                name: 'Язь',
-                scientificName: 'Leuciscus idus',
-                emoji: '🐟',
-                gradient: 'from-indigo-400 to-blue-500',
-                category: 'peaceful',
-                difficulty: 'medium',
-                popularity: 3,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Реки, озера',
-                description: 'Крупная мирная рыба с серебристым блеском. Осторожна и требует мастерства.',
-                size: 'До 80 см, вес до 8 кг',
-                lifespan: '15-20 лет',
-                diet: 'Растительная пища, насекомые, моллюски',
-                bestBait: 'Мотыль, червь, растительные насадки',
-                bestTime: 'Утро и вечер',
-                tips: 'Язь очень осторожен. Используйте тонкие снасти и естественные насадки.',
-                regulations: 'Без ограничений по размеру в большинстве регионов'
-            },
-            {
-                id: 'asp',
-                name: 'Жерех',
-                scientificName: 'Aspius aspius',
-                emoji: '🐟',
-                gradient: 'from-green-400 to-teal-500',
-                category: 'predatory',
-                difficulty: 'hard',
-                popularity: 4,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Большие реки',
-                description: 'Быстрая хищная рыба, предпочитающая течение. Заносится в Красную книгу.',
-                size: 'До 120 см, вес до 12 кг',
-                lifespan: '15-20 лет',
-                diet: 'Рыба, насекомые',
-                bestBait: 'Блесны, воблеры, мушки',
-                bestTime: 'Утро и вечер',
-                tips: 'Жерех - рыба течения. Ловите на спиннинг с быстрой проводкой по течению.',
-                regulations: 'Занесен в Красную книгу в ряде регионов, ловля ограничена'
-            },
-            {
-                id: 'chub',
-                name: 'Голавль',
-                scientificName: 'Squalius cephalus',
-                emoji: '🐟',
-                gradient: 'from-yellow-400 to-green-500',
-                category: 'peaceful',
-                difficulty: 'medium',
-                popularity: 3,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Быстрые реки и ручьи',
-                description: 'Рыба семейства карповых, обитающая в чистых быстрых водах.',
-                size: 'До 60 см, вес до 8 кг',
-                lifespan: '12-15 лет',
-                diet: 'Насекомые, ракообразные, растительная пища',
-                bestBait: 'Мушки, натуральные насадки',
-                bestTime: 'День',
-                tips: 'Голавль любит чистую воду. Лучше всего ловить нахлыстом вверх по течению.',
-                regulations: 'Без ограничений по размеру в большинстве регионов'
-            },
-            {
-                id: 'tench',
-                name: 'Линь',
-                scientificName: 'Tinca tinca',
-                emoji: '🐟',
-                gradient: 'from-emerald-400 to-green-600',
-                category: 'peaceful',
-                difficulty: 'medium',
-                popularity: 3,
-                seasons: ['spring', 'summer', 'autumn'],
-                habitat: 'Заросшие пруды и озера',
-                description: 'Мирная рыба зеленовато-бурого цвета, обитающая в заросших водоемах.',
-                size: 'До 70 см, вес до 10 кг',
-                lifespan: '20-30 лет',
-                diet: 'Черви, моллюски, растительная пища',
-                bestBait: 'Черви, личинки, растительные насадки',
-                bestTime: 'Ночь и раннее утро',
-                tips: 'Линь обитает в заросших местах. Используйте тяжелые оснастки для доставки насадки.',
-                regulations: 'Без ограничений по размеру в большинстве регионов'
-            }
-        ];
+    
+    // Render empty state (когда нет результатов)
+    renderEmptyState() {
+        return `
+            <div class="col-span-full text-center py-12 bg-gray-100 rounded-xl">
+                <span class="text-6xl mb-4 block">😔</span>
+                <h3 class="text-2xl font-display font-bold text-slate-900 mb-2">Ничего не найдено!</h3>
+                <p class="text-slate-600">Попробуйте изменить фильтры или поисковый запрос. Возможно, этой рыбы просто нет в нашем справочнике. (Пока что!)</p>
+            </div>
+        `;
     }
 
-    // Show fish details modal
+    // Show details in modal (нужен соответствующий HTML-модал в fish-guide.html!)
     showFishDetails(fishId) {
         const fish = this.fishData.find(f => f.id === fishId);
         if (!fish) return;
 
         const modal = document.getElementById('fish-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalContent = document.getElementById('modal-content');
-
-        modalTitle.textContent = fish.name;
+        const modalContent = document.getElementById('fish-modal-content');
+        if (!modal || !modalContent) return;
         
+        // Рендеринг детальной информации в модальном окне
         modalContent.innerHTML = `
-            <div class="grid md:grid-cols-2 gap-6 mb-6">
+            <div class="flex justify-between items-start mb-6">
+                <h2 class="text-3xl font-display font-bold text-slate-900">${fish.name} <span class="text-4xl ml-2">${fish.icon}</span></h2>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-700 transition-colors p-1">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="relative mb-6 rounded-xl overflow-hidden bg-gray-200 h-64 flex items-center justify-center text-8xl text-slate-500">
+                ${fish.icon}
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4 mb-6 text-sm">
                 <div>
-                    <div class="w-full h-64 bg-gradient-to-br ${fish.gradient} rounded-xl flex items-center justify-center mb-4">
-                        <span class="text-8xl">${fish.emoji}</span>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                            <span class="font-semibold text-slate-700">Категория</span>
-                            <span class="text-sm px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                                ${fish.category === 'predatory' ? 'Хищная' : fish.category === 'peaceful' ? 'Мирная' : 'Редкая'}
-                            </span>
-                        </div>
-                        
-                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                            <span class="font-semibold text-slate-700">Сложность ловли</span>
-                            <span class="text-sm px-2 py-1 ${
-                                fish.difficulty === 'easy' ? 'bg-green-100 text-green-800' :
-                                fish.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
-                            } rounded-full">
-                                ${fish.difficulty === 'easy' ? 'Легко' : fish.difficulty === 'medium' ? 'Средне' : 'Сложно'}
-                            </span>
-                        </div>
-                        
-                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                            <span class="font-semibold text-slate-700">Популярность</span>
-                            <div class="flex items-center">
-                                <span class="text-sm font-medium text-slate-600">${fish.popularity}/5</span>
-                                <span class="ml-1 text-yellow-400">⭐</span>
-                            </div>
-                        </div>
-                    </div>
+                    <h3 class="font-semibold text-slate-800">Категория</h3>
+                    <p class="text-slate-600">${fish.category === 'predator' ? 'Хищник' : 'Мирная рыба'}</p>
                 </div>
-                
                 <div>
-                    <div class="mb-6">
-                        <h3 class="font-semibold text-slate-800 mb-2">Научное название</h3>
-                        <p class="text-slate-600 italic">${fish.scientificName}</p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <h3 class="font-semibold text-slate-800 mb-2">Среда обитания</h3>
-                        <p class="text-slate-600">${fish.habitat}</p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <h3 class="font-semibold text-slate-800 mb-2">Размер и возраст</h3>
-                        <p class="text-slate-600 mb-1"><strong>Размер:</strong> ${fish.size}</p>
-                        <p class="text-slate-600"><strong>Возраст:</strong> ${fish.lifespan}</p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <h3 class="font-semibold text-slate-800 mb-2">Питание</h3>
-                        <p class="text-slate-600">${fish.diet}</p>
-                    </div>
-                    
-                    <div class="mb-6">
-                        <h3 class="font-semibold text-slate-800 mb-2">Сезон активности</h3>
-                        <div class="flex space-x-2">
-                            ${fish.seasons.map(season => `
-                                <div class="flex items-center px-3 py-1 bg-slate-100 rounded-full">
-                                    <div class="season-indicator season-${season} mr-2"></div>
-                                    <span class="text-sm font-medium">${this.getSeasonName(season)}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
+                    <h3 class="font-semibold text-slate-800">Сезон</h3>
+                    <p class="text-slate-600">${fish.season.join(', ')}</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-800">Среда обитания</h3>
+                    <p class="text-slate-600">${fish.habitat}</p>
                 </div>
             </div>
             
-            <div class="grid md:grid-cols-2 gap-6 mb-6">
-                <div class="bg-blue-50 rounded-xl p-4">
-                    <h3 class="font-semibold text-slate-800 mb-3">Лучшие насадки</h3>
-                    <p class="text-slate-600">${fish.bestBait}</p>
-                </div>
-                
-                <div class="bg-orange-50 rounded-xl p-4">
-                    <h3 class="font-semibold text-slate-800 mb-3">Лучшее время</h3>
-                    <p class="text-slate-600">${fish.bestTime}</p>
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">На что ловить (Приманки)</h3>
+                <div class="flex flex-wrap gap-2">
+                    ${fish.bait.map(b => `<span class="bg-lake-blue/10 text-lake-blue px-3 py-1 rounded-full text-sm font-medium">${b}</span>`).join('')}
                 </div>
             </div>
-            
+
             <div class="mb-6">
                 <h3 class="font-semibold text-slate-800 mb-3">Описание</h3>
                 <p class="text-slate-600 leading-relaxed">${fish.description}</p>
@@ -590,22 +233,23 @@ class FishGuidePage {
             
             <div class="mb-6">
                 <h3 class="font-semibold text-slate-800 mb-3">Советы по ловле</h3>
-                <div class="bg-green-50 rounded-xl p-4">
+                <div class="bg-accent-green/10 text-accent-green rounded-xl p-4">
                     <p class="text-slate-700">${fish.tips}</p>
                 </div>
             </div>
             
-            <div class="bg-yellow-50 rounded-xl p-4">
+            <div class="bg-sunset-orange/10 text-sunset-orange rounded-xl p-4">
                 <h3 class="font-semibold text-slate-800 mb-2">Правила и ограничения</h3>
                 <p class="text-slate-700 text-sm">${fish.regulations}</p>
             </div>
         `;
 
+        // Активация модального окна (предполагает, что у модала есть CSS-стили для .show)
         modal.classList.add('show');
     }
 }
 
-// Utility functions
+// Utility functions (функции-помощники для вызова из HTML)
 function showFishDetails(fishId) {
     if (window.fishGuidePage) {
         window.fishGuidePage.showFishDetails(fishId);
@@ -614,6 +258,7 @@ function showFishDetails(fishId) {
 
 function closeModal() {
     const modal = document.getElementById('fish-modal');
+    // Закрытие модального окна
     if (modal) {
         modal.classList.remove('show');
     }
@@ -627,7 +272,7 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Initialize page when DOM is loaded
+// Инициализация при загрузке DOM
 document.addEventListener('DOMContentLoaded', () => {
     window.fishGuidePage = new FishGuidePage();
 });
