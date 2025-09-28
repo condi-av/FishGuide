@@ -1,510 +1,475 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Справочник озер для рыбаков - Найдите лучшие места для рыбалки</title>
-    <meta name="description" content="Полный справочник рыбных озер России. Карты, прогнозы клева, калькулятор снастей и многое другое для успешной рыбалки.">
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Core Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- Custom Modules -->
-    <script src="src/extended-lakes-data.js"></script>
-    <script src="src/weather-service.js"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'display': ['Playfair Display', 'serif'],
-                        'body': ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        'lake-blue': '#1e3a8a',
-                        'sunset-orange': '#f97316',
-                        'nature-green': '#059669',
-                        'deep-water': '#0f172a',
-                        'mist-gray': '#64748b',
-                    }
-                }
-            }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Справочник озер для рыбаков - Найдите лучшие места для рыбалки</title>
+  <meta name="description" content="Полный справочник рыбных озер России. Карты, прогнозы клева, калькулятор снастей и многое другое для успешной рыбалки.">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Core Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Custom Modules -->
+  <script src="src/weather-service.js"></script>
+  <script src="src/extended-lakes-data.js"></script>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Playfair Display', 'serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'lake-blue': '#1e3a8a',
+            'sunset-orange': '#f97316',
+            'nature-green': '#059669',
+            'deep-water': '#0f172a',
+            'mist-gray': '#64748b',
+          }
         }
-    </script>
-    
-    <style>
-        .hero-bg {
-            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-        }
-        
-        .card-hover {
-            transition: all 0.3s ease;
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-        
-        .text-gradient {
-            background: linear-gradient(135deg, #f97316, #059669);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .map-container {
-            height: 400px;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        
-        .fish-icon {
-            animation: swim 3s ease-in-out infinite;
-        }
-        
-        @keyframes swim {
-            0%, 100% { transform: translateX(0) rotate(0deg); }
-            25% { transform: translateX(5px) rotate(2deg); }
-            75% { transform: translateX(-5px) rotate(-2deg); }
-        }
-        
-        .ripple-effect {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .ripple-effect::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(249, 115, 22, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .ripple-effect:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-    </style>
+      }
+    }
+  </script>
+
+  <style>
+    .hero-bg { background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); }
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .text-gradient { background: linear-gradient(135deg, #f97316, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .map-container { height: 400px; border-radius: 12px; overflow: hidden; }
+    .fish-icon { animation: swim 3s ease-in-out infinite; }
+    @keyframes swim { 0%, 100% { transform: translateX(0) rotate(0deg); } 25% { transform: translateX(5px) rotate(2deg); } 75% { transform: translateX(-5px) rotate(-2deg); } }
+    .ripple-effect::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; background: rgba(249, 115, 22, 0.3); transform: translate(-50%, -50%); transition: width 0.6s, height 0.6s; }
+    .ripple-effect:hover::before { width: 300px; height: 300px; }
+  </style>
 </head>
+
 <body class="font-body bg-slate-50">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">🎣</span>
-                    </div>
-                    <span class="font-display font-bold text-xl text-slate-800">FishGuide</span>
-                </div>
-                
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="index.html" class="text-lake-blue font-medium border-b-2 border-lake-blue pb-1">Главная</a>
-                    <a href="lakes.html" class="text-slate-600 hover:text-lake-blue transition-colors">Каталог озер</a>
-                    <a href="calculator.html" class="text-slate-600 hover:text-lake-blue transition-colors">Калькулятор</a>
-                    <a href="fish-guide.html" class="text-slate-600 hover:text-lake-blue transition-colors">Справочник</a>
-                </div>
-                
-                <div class="md:hidden">
-                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-lake-blue">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200">
-            <div class="px-4 py-4 space-y-3">
-                <a href="index.html" class="block text-lake-blue font-medium">Главная</a>
-                <a href="lakes.html" class="block text-slate-600 hover:text-lake-blue">Каталог озер</a>
-                <a href="calculator.html" class="block text-slate-600 hover:text-lake-blue">Калькулятор</a>
-                <a href="fish-guide.html" class="block text-slate-600 hover:text-lake-blue">Справочник</a>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <section class="hero-bg pt-16 pb-20 relative overflow-hidden">
-        <div class="absolute inset-0 bg-black/20"></div>
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-            <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <div class="text-white">
-                    <h1 class="font-display text-5xl lg:text-6xl font-bold mb-6 leading-tight">
-                        Найдите <span class="text-gradient">лучшие озера</span> для рыбалки
-                    </h1>
-                    <p class="text-xl text-blue-100 mb-8 leading-relaxed">
-                        Полный справочник рыбных озер России с картами, прогнозами клева, 
-                        калькулятором снастей и полезными советами для успешной рыбалки.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <button onclick="scrollToMap()" class="ripple-effect bg-sunset-orange hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300">
-                            Найти озера на карте
-                        </button>
-                        <a href="calculator.html" class="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 text-center backdrop-blur-sm">
-                            Подобрать снасти
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="relative">
-                    <img src="assets/images/hero_lake.png" alt="Озеро для рыбалки" class="w-full h-96 object-cover rounded-2xl shadow-2xl">
-                    <div class="absolute -top-4 -right-4 bg-white/90 backdrop-blur-sm rounded-full p-4 shadow-lg">
-                        <div class="fish-icon text-3xl">🐟</div>
-                    </div>
-                </div>
-            </div>
+  <!-- Navigation -->
+  <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
+            <span class="text-white font-bold text-sm">🎣</span>
+          </div>
+          <span class="font-display font-bold text-xl text-slate-800">FishGuide</span>
         </div>
-    </section>
+        <div class="hidden md:flex items-center space-x-8">
+          <a href="index.html" class="text-lake-blue font-medium border-b-2 border-lake-blue pb-1">Главная</a>
+          <a href="lakes.html" class="text-slate-600 hover:text-lake-blue transition-colors">Каталог озер</a>
+          <a href="calculator.html" class="text-slate-600 hover:text-lake-blue transition-colors">Калькулятор</a>
+          <a href="fish-guide.html" class="text-slate-600 hover:text-lake-blue transition-colors">Справочник</a>
+        </div>
+        <div class="md:hidden">
+          <button id="mobile-menu-btn" class="text-slate-600 hover:text-lake-blue">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <!-- Mobile Menu -->
+      <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 px-4 py-3 space-y-2">
+        <a href="index.html" class="block text-lake-blue font-medium bg-gray-50 px-3 py-2 rounded">Главная</a>
+        <a href="lakes.html" class="block text-slate-600 hover:bg-gray-50 px-3 py-2 rounded">Каталог озер</a>
+        <a href="calculator.html" class="block text-slate-600 hover:bg-gray-50 px-3 py-2 rounded">Калькулятор</a>
+        <a href="fish-guide.html" class="block text-slate-600 hover:bg-gray-50 px-3 py-2 rounded">Справочник</a>
+      </div>
+    </div>
+  </nav>
 
-    <!-- Quick Search Section -->
-    <section class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-4xl font-bold text-slate-800 mb-4">Быстрый поиск озер</h2>
-                <p class="text-xl text-slate-600">Найдите идеальное место для рыбалки по вашим предпочтениям</p>
-            </div>
-            
-            <div class="bg-slate-50 rounded-2xl p-8">
-                <div class="grid md:grid-cols-4 gap-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Регион</label>
-                        <select id="region-filter" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-lake-blue focus:border-transparent">
-                            <option value="">Все регионы</option>
-                            <option value="karelia">Карелия</option>
-                            <option value="tver">Тверская область</option>
-                            <option value="astrakhan">Астраханская область</option>
-                            <option value="irkutsk">Иркутская область</option>
-                            <option value="smolensk">Смоленская область</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Тип рыбы</label>
-                        <select id="fish-filter" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-lake-blue focus:border-transparent">
-                            <option value="">Любая рыба</option>
-                            <option value="pike">Щука</option>
-                            <option value="perch">Окунь</option>
-                            <option value="carp">Карп</option>
-                            <option value="bream">Лещ</option>
-                            <option value="salmon">Лосось</option>
-                        </select>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Сезон</label>
-                        <select id="season-filter" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-lake-blue focus:border-transparent">
-                            <option value="">Круглый год</option>
-                            <option value="spring">Весна</option>
-                            <option value="summer">Лето</option>
-                            <option value="autumn">Осень</option>
-                            <option value="winter">Зима</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex items-end">
-                        <button onclick="searchLakes()" class="w-full bg-lake-blue hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300">
-                            Найти озера
-                        </button>
-                    </div>
-                </div>
-            </div>
+  <!-- Hero Section -->
+  <section class="hero-bg pt-16 pb-20 relative overflow-hidden">
+    <div class="absolute inset-0 bg-black/20"></div>
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div class="text-white">
+          <h1 class="font-display text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+            Найдите <span class="text-gradient">лучшие озера</span> для рыбалки
+          </h1>
+          <p class="text-xl text-blue-100 mb-8 leading-relaxed">
+            Полный справочник рыбных озер России с картами, прогнозами клева, калькулятором снастей и полезными советами для успешной рыбалки.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4">
+            <button onclick="scrollToMap()" class="ripple-effect bg-sunset-orange hover:bg-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300">
+              Найти озера на карте
+            </button>
+            <a href="calculator.html" class="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 text-center backdrop-blur-sm">
+              Подобрать снасти
+            </a>
+          </div>
         </div>
-    </section>
+        <div class="relative">
+          <img src="assets/images/hero_lake.png" alt="Озеро для рыбалки" class="w-full h-96 object-cover rounded-2xl shadow-2xl">
+          <div class="absolute -top-4 -right-4 bg-white/90 backdrop-blur-sm rounded-full p-4 shadow-lg">
+            <div class="fish-icon text-3xl">🐟</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Interactive Map Section -->
-    <section id="map-section" class="py-16 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-4xl font-bold text-slate-800 mb-4">Карта рыбных озер</h2>
-                <p class="text-xl text-slate-600">Исследуйте популярные места для рыбалки по всей России</p>
-            </div>
-            
-            <div class="bg-white rounded-2xl p-6 shadow-lg">
-                <div id="map" class="map-container"></div>
-                <div class="mt-4 flex flex-wrap gap-4 justify-center">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-4 h-4 bg-lake-blue rounded-full"></div>
-                        <span class="text-sm text-slate-600">Озера с щукой</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-4 h-4 bg-sunset-orange rounded-full"></div>
-                        <span class="text-sm text-slate-600">Озера с окунями</span>
-                    </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-4 h-4 bg-nature-green rounded-full"></div>
-                        <span class="text-sm text-slate-600">Озера с карпом</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- Quick Search Section -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-slate-800 mb-4">Быстрый поиск озер</h2>
+        <p class="text-xl text-slate-600">Найдите идеальное место для рыбалки по вашим предпочтениям</p>
+      </div>
 
-    <!-- Popular Lakes Section -->
-    <section class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-4xl font-bold text-slate-800 mb-4">Популярные озера</h2>
-                <p class="text-xl text-slate-600">Лучшие места для рыбалки по отзывам рыбаков</p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Lake Card 1 -->
-                <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 relative">
-                        <img src="https://kimi-web-img.moonshot.cn/img/plus.unsplash.com/63aa503971168e315df586e32f30abb6bc13e832" alt="Озеро Селигер" class="w-full h-full object-cover">
-                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                            <span class="text-sm font-semibold text-slate-700">4.8 ⭐</span>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Озеро Селигер</h3>
-                        <p class="text-slate-600 mb-4">Тверская область • 160 км от Москвы</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">Щука</span>
-                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">Окунь</span>
-                            <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">Лещ</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-500">Лучшее время: Май-Октябрь</span>
-                            <a href="lakes.html" class="text-lake-blue hover:text-blue-800 font-semibold">Подробнее →</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Lake Card 2 -->
-                <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 relative">
-                        <img src="https://kimi-web-img.moonshot.cn/img/www.nps.gov/55be5d236f5610ad8e60dfffd8cd4af2cbcdd03f.jpg" alt="Озеро Байкал" class="w-full h-full object-cover">
-                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                            <span class="text-sm font-semibold text-slate-700">4.9 ⭐</span>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Озеро Байкал</h3>
-                        <p class="text-slate-600 mb-4">Иркутская область • уникальная экосистема</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">Омуль</span>
-                            <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Хариус</span>
-                            <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium">Таймень</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-500">Лучшее время: Июнь-Сентябрь</span>
-                            <a href="lakes.html" class="text-lake-blue hover:text-blue-800 font-semibold">Подробнее →</a>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Lake Card 3 -->
-                <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
-                    <div class="h-48 bg-gradient-to-br from-orange-400 to-red-500 relative">
-                        <img src="https://kimi-web-img.moonshot.cn/img/media.istockphoto.com/a2b417d5ec2a7a6995e1aaffeb9e52e6decffef7.jpg" alt="Дельта Волги" class="w-full h-full object-cover">
-                        <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                            <span class="text-sm font-semibold text-slate-700">4.7 ⭐</span>
-                        </div>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Дельта Волги</h3>
-                        <p class="text-slate-600 mb-4">Астраханская область • 30 видов рыб</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Сазан</span>
-                            <span class="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium">Сом</span>
-                            <span class="bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">Судак</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm text-slate-500">Лучшее время: Апрель-Октябрь</span>
-                            <a href="lakes.html" class="text-lake-blue hover:text-blue-800 font-semibold">Подробнее →</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="text-center mt-12">
-                <a href="lakes.html" class="bg-lake-blue hover:bg-blue-800 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300">
-                    Смотреть все озера
-                </a>
-            </div>
-        </div>
-    </section>
+      <div class="bg-slate-50 rounded-2xl p-8">
+        <div class="grid md:grid-cols-4 gap-6">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Регион</label>
+            <select id="region-filter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lake-blue focus:border-transparent">
+              <option value="">Все регионы</option>
+              <option value="karelia">Карелия</option>
+              <option value="tver">Тверская область</option>
+              <option value="astrakhan">Астраханская область</option>
+              <option value="irkutsk">Иркутская область</option>
+              <option value="smolensk">Смоленская область</option>
+            </select>
+          </div>
 
-    <!-- Fishing Forecast Section -->
-    <section class="py-16 bg-slate-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-4xl font-bold text-slate-800 mb-4">Прогноз клева</h2>
-                <p class="text-xl text-slate-600">Точный прогноз на основе погодных данных и других факторов</p>
-            </div>
-            
-            <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
-                <!-- Weather Data Display -->
-                <div class="bg-gradient-to-r from-lake-blue to-blue-600 text-white p-6">
-                    <div class="grid md:grid-cols-4 gap-6">
-                        <div class="text-center">
-                            <div class="text-3xl mb-2" id="current-weather-icon">🌤️</div>
-                            <div class="text-2xl font-bold" id="current-temp">+15°C</div>
-                            <div class="text-sm opacity-90" id="current-weather-desc">Облачно</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm opacity-90 mb-1">Давление</div>
-                            <div class="text-xl font-bold" id="current-pressure">760 мм</div>
-                            <div class="text-sm opacity-90" id="pressure-trend">стабильно</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm opacity-90 mb-1">Ветер</div>
-                            <div class="text-xl font-bold" id="current-wind">3 м/с</div>
-                            <div class="text-sm opacity-90" id="wind-direction">СВ</div>
-                        </div>
-                        <div class="text-center">
-                            <div class="text-sm opacity-90 mb-1">Луна</div>
-                            <div class="text-2xl mb-1" id="moon-phase-icon">🌖</div>
-                            <div class="text-sm opacity-90" id="moon-phase-name">Убывающая</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="p-6">
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <div>
-                            <h3 class="font-display text-2xl font-bold text-slate-800 mb-4">Текущий клев</h3>
-                            <div id="current-bite-forecast">
-                                <!-- Current bite forecast will be loaded here -->
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h3 class="font-display text-2xl font-bold text-slate-800 mb-4">Прогноз на 3 дня</h3>
-                            <div id="forecast-container">
-                                <!-- 3-day forecast will be loaded here -->
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-8 pt-6 border-t border-slate-200">
-                        <h3 class="font-display text-xl font-bold text-slate-800 mb-4">Рекомендации</h3>
-                        <div id="recommendations-container" class="space-y-3">
-                            <!-- Recommendations will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Тип рыбы</label>
+            <select id="fish-filter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lake-blue focus:border-transparent">
+              <option value="">Любая рыба</option>
+              <option value="pike">Щука</option>
+              <option value="perch">Окунь</option>
+              <option value="carp">Карп</option>
+              <option value="bream">Лещ</option>
+              <option value="salmon">Лосось</option>
+            </select>
+          </div>
 
-    <!-- Features Section -->
-    <section class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-4xl font-bold text-slate-800 mb-4">Почему выбирают FishGuide</h2>
-                <p class="text-xl text-slate-600">Все необходимое для успешной рыбалки в одном месте</p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-lake-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">🗺️</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Интерактивные карты</h3>
-                    <p class="text-slate-600">Найдите лучшие места для рыбалки на подробной карте с отзывами</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-sunset-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">🎯</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Прогноз клева</h3>
-                    <p class="text-slate-600">Получайте точные прогнозы на основе погоды и других факторов</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-nature-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">🛠️</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Калькулятор снастей</h3>
-                    <p class="text-slate-600">Подберите оптимальные снасти под ваши условия рыбалки</p>
-                </div>
-                
-                <div class="text-center">
-                    <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <span class="text-3xl">📚</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Справочник рыб</h3>
-                    <p class="text-slate-600">Изучите виды рыб и узнайте лучшие способы их ловли</p>
-                </div>
-            </div>
-        </div>
-    </section>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Сезон</label>
+            <select id="season-filter" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lake-blue focus:border-transparent">
+              <option value="">Круглый год</option>
+              <option value="spring">Весна</option>
+              <option value="summer">Лето</option>
+              <option value="autumn">Осень</option>
+              <option value="winter">Зима</option>
+            </select>
+          </div>
 
-    <!-- Footer -->
-    <footer class="bg-slate-800 text-white py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
-                            <span class="text-white font-bold text-sm">🎣</span>
-                        </div>
-                        <span class="font-display font-bold text-xl">FishGuide</span>
-                    </div>
-                    <p class="text-slate-300">Ваш надежный спутник в мире рыбалки. Находите лучшие места, получайте прогнозы и улучшайте свои навыки.</p>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Навигация</h3>
-                    <ul class="space-y-2">
-                        <li><a href="index.html" class="text-slate-300 hover:text-white transition-colors">Главная</a></li>
-                        <li><a href="lakes.html" class="text-slate-300 hover:text-white transition-colors">Каталог озер</a></li>
-                        <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор</a></li>
-                        <li><a href="fish-guide.html" class="text-slate-300 hover:text-white transition-colors">Справочник</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Популярные регионы</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Карелия</a></li>
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Тверская область</a></li>
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Астраханская область</a></li>
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Иркутская область</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Контакты</h3>
-                    <ul class="space-y-2">
-                        <li class="text-slate-300">📧 info@fishguide.ru</li>
-                        <li class="text-slate-300">📱 +7 (999) 123-45-67</li>
-                        <li class="text-slate-300">🌐 fishguide.ru</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-slate-700 mt-8 pt-8 text-center">
-                <p class="text-slate-400">© 2025 FishGuide. Все права защищены. Создано с любовью к рыбалке.</p>
-            </div>
+          <div class="flex items-end">
+            <button onclick="searchLakes()" class="w-full bg-lake-blue hover:bg-blue-800 text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300">
+              Найти озера
+            </button>
+          </div>
         </div>
-    </footer>
-    
-    <script src="src/main.js"></script>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Map Section -->
+  <section id="map-section" class="py-16 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-slate-800 mb-4">Карта рыбных озер</h2>
+        <p class="text-xl text-slate-600">Исследуйте популярные места для рыбалки по всей России</p>
+      </div>
+
+      <div class="bg-white rounded-2xl p-6 shadow-lg">
+        <div id="map" class="map-container"></div>
+        <div class="mt-4 flex flex-wrap gap-4 justify-center">
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 bg-lake-blue rounded-full"></div>
+            <span class="text-sm text-slate-600">Озера с щукой</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 bg-sunset-orange rounded-full"></div>
+            <span class="text-sm text-slate-600">Озера с окунями</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 bg-nature-green rounded-full"></div>
+            <span class="text-sm text-slate-600">Озера с карпом</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="w-4 h-4 bg-purple-500 rounded-full"></div>
+            <span class="text-sm text-slate-600">Озера с лещом</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Popular Lakes Section -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-slate-800 mb-4">Популярные озера</h2>
+        <p class="text-xl text-slate-600">Лучшие места для рыбалки по отзывам рыбаков</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Lake Card 1 -->
+        <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 relative">
+            <img src="assets/images/hero_lake.png" alt="Озеро Селигер" class="w-full h-full object-cover">
+            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+              <span class="text-sm font-semibold text-slate-700">4.8 ⭐</span>
+            </div>
+            <div class="absolute top-4 left-4 bg-lake-blue text-white px-3 py-1 rounded-full text-sm font-medium">
+              Тверская область
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Озеро Селигер</h3>
+            <p class="text-slate-600 mb-4">Одно из крупнейших озер Тверской области, известное своей богатой рыбной фауной.</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">Щука</span>
+              <span class="bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs font-medium">Окунь</span>
+              <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">Лещ</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-500">Лучшее время: Май-Октябрь</span>
+              <a href="lakes.html" class="text-lake-blue hover:text-blue-800 font-semibold">Подробнее →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lake Card 2 -->
+        <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 relative">
+            <img src="https://kimi-web-img.moonshot.cn/img/www.nps.gov/55be5d236f5610ad8e60dfffd8cd4af2cbcdd03f.jpg" alt="Озеро Байкал" class="w-full h-full object-cover">
+            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+              <span class="text-sm font-semibold text-slate-700">4.9 ⭐</span>
+            </div>
+            <div class="absolute top-4 left-4 bg-lake-blue text-white px-3 py-1 rounded-full text-sm font-medium">
+              Иркутская область
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Озеро Байкал</h3>
+            <p class="text-slate-600 mb-4">Самое глубокое и чистое озеро планеты. Мировой центр нахлыста.</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium">Омуль</span>
+              <span class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full text-xs font-medium">Хариус</span>
+              <span class="bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full text-xs font-medium">Таймень</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-500">Лучшее время: Июнь-Сентябрь</span>
+              <a href="lakes.html" class="text-lake-blue hover:text-blue-800 font-semibold">Подробнее →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lake Card 3 -->
+        <div class="card-hover bg-white rounded-2xl shadow-lg overflow-hidden">
+          <div class="h-48 bg-gradient-to-br from-orange-400 to-red-500 relative">
+            <img src="https://kimi-web-img.moonshot.cn/img/media.istockphoto.com/a2b417d5ec2a7a6995e1aaffeb9e52e6decffef7.jpg" alt="Дельта Волги" class="w-full h-full object-cover">
+            <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
+              <span class="text-sm font-semibold text-slate-700">4.7 ⭐</span>
+            </div>
+            <div class="absolute top-4 left-4 bg-lake-blue text-white px-3 py-1 rounded-full text-sm font-medium">
+              Астраханская область
+            </div>
+          </div>
+          <div class="p-6">
+            <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Дельта Волги</h3>
+            <p class="text-slate-600 mb-4">Лучшее место для трофейной рыбалки в России. Изобилие видов.</p>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">Сазан</span>
+              <span class="bg-pink-100 text-pink-800 px-2 py-1 rounded-full text-xs font-medium">Сом</span>
+              <span class="bg-cyan-100 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium">Судак</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-500">Лучшее время: Апрель-Октябрь</span>
+              <a href="lakes.html" class="text-lake-blue hover:text-blue-800 font-semibold">Подробнее →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-12">
+        <a href="lakes.html" class="bg-lake-blue hover:bg-blue-800 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300">
+          Смотреть все озера
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Fishing Forecast Section -->
+  <section class="py-16 bg-slate-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-slate-800 mb-4">Прогноз клева</h2>
+        <p class="text-xl text-slate-600">Точный прогноз на основе погодных данных и других факторов</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+        <!-- Weather Data Display -->
+        <div class="bg-gradient-to-r from-lake-blue to-blue-600 text-white p-6">
+          <div class="grid md:grid-cols-4 gap-6">
+            <div class="text-center">
+              <div class="text-3xl mb-2" id="current-weather-icon">🌤️</div>
+              <div class="text-2xl font-bold" id="current-temp">+15°C</div>
+              <div class="text-sm opacity-90" id="current-weather-desc">Облачно</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm opacity-90 mb-1">Давление</div>
+              <div class="text-xl font-bold" id="current-pressure">760 мм</div>
+              <div class="text-sm opacity-90" id="pressure-trend">стабильно</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm opacity-90 mb-1">Ветер</div>
+              <div class="text-xl font-bold" id="current-wind">3 м/с</div>
+              <div class="text-sm opacity-90" id="wind-direction">СВ</div>
+            </div>
+            <div class="text-center">
+              <div class="text-sm opacity-90 mb-1">Луна</div>
+              <div class="text-2xl mb-1" id="moon-phase-icon">🌖</div>
+              <div class="text-sm opacity-90" id="moon-phase-name">Убывающая</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6">
+          <div class="grid md:grid-cols-2 gap-8">
+            <div>
+              <h3 class="font-display text-2xl font-bold text-slate-800 mb-4">Текущий клев</h3>
+              <div id="current-bite-forecast">
+                <!-- Прогноз будет вставлен сюда -->
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-display text-2xl font-bold text-slate-800 mb-4">Прогноз на 3 дня</h3>
+              <div id="forecast-container">
+                <!-- Прогноз будет вставлен сюда -->
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-6 border-t border-slate-200">
+            <h3 class="font-display text-xl font-bold text-slate-800 mb-4">Рекомендации</h3>
+            <div id="recommendations-container" class="space-y-3">
+              <!-- Рекомендации будут вставлены сюда -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-display font-bold text-slate-800 mb-4">Почему выбирают FishGuide</h2>
+        <p class="text-xl text-slate-600">Всё необходимое для успешной рыбалки в одном месте</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="text-center">
+          <div class="w-16 h-16 bg-lake-blue/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl">🗺️</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Интерактивные карты</h3>
+          <p class="text-slate-600">Найдите лучшие места для рыбалки на подробной карте с отзывами</p>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-sunset-orange/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl">🎯</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Прогноз клева</h3>
+          <p class="text-slate-600">Получайте точные прогнозы на основе погоды и других факторов</p>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-nature-green/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl">🛠️</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Калькулятор снастей</h3>
+          <p class="text-slate-600">Подберите оптимальные снасти под ваши условия рыбалки</p>
+        </div>
+
+        <div class="text-center">
+          <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <span class="text-3xl">📚</span>
+          </div>
+          <h3 class="font-display text-xl font-bold text-slate-800 mb-2">Справочник рыб</h3>
+          <p class="text-slate-600">Изучите виды рыб и узнайте лучшие способы их ловли</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-800 text-white py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
+              <span class="text-white font-bold text-sm">🎣</span>
+            </div>
+            <span class="font-display font-bold text-xl">FishGuide</span>
+          </div>
+          <p class="text-slate-300">Ваш надёжный помощник в мире рыбалки. Находите лучшие места, получайте прогнозы и улучшайте свои навыки.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg mb-4">Навигация</h3>
+          <ul class="space-y-2">
+            <li><a href="index.html" class="text-white font-medium">Главная</a></li>
+            <li><a href="lakes.html" class="text-slate-300 hover:text-white transition-colors">Каталог озер</a></li>
+            <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор</a></li>
+            <li><a href="fish-guide.html" class="text-slate-300 hover:text-white transition-colors">Справочник</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg mb-4">Популярные регионы</h3>
+          <ul class="space-line">
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Карелия</a></li>
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Тверская область</a></li>
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Астраханская область</a></li>
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Иркутская область</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg mb-4">Контакты</h3>
+          <ul class="space-y-2">
+            <li class="text-slate-300">📧 info@fishguide.ru</li>
+            <li class="text-slate-300">📱 +7 (999) 123-45-67</li>
+            <li class="text-slate-300">🌐 fishguide.ru</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-700 mt-8 pt-8 text-center">
+        <p class="text-slate-400">© 2025 FishGuide. Все права защищены. Создано с любовью к рыбалке.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="src/weather-service.js"></script>
+  <script src="src/extended-lakes-data.js"></script>
+  <script src="src/main.js"></script>
+
+  <!-- Feather icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
+    feather.replace();
+  </script>
 </body>
 </html>
