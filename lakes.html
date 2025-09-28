@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Каталог озер - FishGuide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .text-gradient { background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+        .filter-active { background-color: #f97316; color: white; }
+        .loading { animation: spin 1s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">🐟</div>
+                    <span class="text-xl font-bold text-gradient">FishGuide</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-slate-600 hover:text-blue-600 transition-colors">Главная</a>
+                    <a href="lakes.html" class="text-blue-600 font-medium">Каталог озер</a>
+                    <a href="tackle-calculator.html" class="text-slate-600 hover:text-blue-600 transition-colors">Подобрать снасти</a>
+                    <a href="fish-guide.html" class="text-slate-600 hover:text-blue-600 transition-colors">Справочник рыб</a>
+                </div>
+                <button class="md:hidden p-2" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed top-16 left-0 w-full bg-white border-b border-slate-200 z-40 hidden">
+        <div class="px-4 py-4 space-y-2">
+            <a href="index.html" class="block py-2 text-slate-600">Главная</a>
+            <a href="lakes.html" class="block py-2 text-blue-600 font-medium">Каталог озер</a>
+            <a href="tackle-calculator.html" class="block py-2 text-slate-600">Подобрать снасти</a>
+            <a href="fish-guide.html" class="block py-2 text-slate-600">Справочник рыб</a>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <section class="pt-24 pb-12 bg-gradient-to-br from-blue-600 to-blue-800">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Каталог озер</h1>
+            <p class="text-xl text-blue-100 mb-8">Найдите идеальное место для рыбалки</p>
+            
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="search-input"
+                        placeholder="Поиск по названию или региону..."
+                        class="w-full px-6 py-4 text-lg rounded-lg border-0 focus:ring-4 focus:ring-blue-300 outline-none"
+                    >
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-blue-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="py-8 bg-white border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <!-- Region Filter -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-700">Регион:</label>
+                    <select id="region-filter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Все регионы</option>
+                        <option value="Тверская область">Тверская область</option>
+                        <option value="Карелия">Карелия</option>
+                        <option value="Ленинградская область">Ленинградская область</option>
+                        <option value="Иркутская область">Иркутская область</option>
+                        <option value="Новгородская область">Новгородская область</option>
+                        <option value="Псковская область">Псковская область</option>
+                        <option value="Вологодская область">Вологодская область</option>
+                    </select>
+                </div>
+
+                <!-- Fish Filter -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-700">Рыба:</label>
+                    <select id="fish-filter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Любая рыба</option>
+                        <option value="Щука">Щука</option>
+                        <option value="Окунь">Окунь</option>
+                        <option value="Лещ">Лещ</option>
+                        <option value="Судак">Судак</option>
+                        <option value="Язь">Язь</option>
+                        <option value="Плотва">Плотва</option>
+                    </select>
+                </div>
+
+                <!-- Season Filter -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-700">Сезон:</label>
+                    <select id="season-filter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Круглый год</option>
+                        <option value="Зима">Зима</option>
+                        <option value="Весна">Весна</option>
+                        <option value="Лето">Лето</option>
+                        <option value="Осень">Осень</option>
+                    </select>
+                </div>
+
+                <!-- Rating Filter -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-700">Рейтинг:</label>
+                    <select id="rating-filter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">Любой</option>
+                        <option value="4.5">4.5+</option>
+                        <option value="4.0">4.0+</option>
+                        <option value="3.5">3.5+</option>
+                    </select>
+                </div>
+
+                <!-- Reset Button -->
+                <button id="reset-filters" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                    Сбросить
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Results Counter -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Найдено озер: <span id="results-count">0</span></h2>
+                    <p class="text-slate-600" id="results-text">Загрузка...</p>
+                </div>
+                
+                <!-- Sort Options -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-700">Сортировка:</label>
+                    <select id="sort-filter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="popularity">По популярности</option>
+                        <option value="rating">По рейтингу</option>
+                        <option value="name">По названию</option>
+                        <option value="distance">По расстоянию</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loading-state" class="text-center py-12">
+                <div class="loading w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4"></div>
+                <p class="text-slate-600">Загрузка озер...</p>
+            </div>
+
+            <!-- No Results State -->
+            <div id="no-results" class="text-center py-12 hidden">
+                <div class="text-6xl mb-4">🎣</div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Ничего не найдено</h3>
+                <p class="text-slate-600 mb-4">Попробуйте изменить параметры поиска</p>
+                <button onclick="resetAllFilters()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    Сбросить фильтры
+                </button>
+            </div>
+
+            <!-- Lakes Grid -->
+            <div id="lakes-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 hidden">
+                <!-- Lakes will be loaded here -->
+            </div>
+
+            <!-- Load More Button -->
+            <div class="text-center mt-12">
+                <button id="load-more" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-colors hidden">
+                    Загрузить еще
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="text-2xl">🐟</div>
+                        <span class="text-xl font-bold text-gradient">FishGuide</span>
+                    </div>
+                    <p class="text-slate-400">Путеводитель по рыболовным озерам России</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Навигация</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="index.html" class="hover:text-white transition-colors">Главная</a></li>
+                        <li><a href="tackle-calculator.html" class="hover:text-white transition-colors">Калькулятор снастей</a></li>
+                        <li><a href="fish-guide.html" class="hover:text-white transition-colors">Справочник рыб</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Популярные регионы</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="?region=Тверская область" class="hover:text-white transition-colors">Тверская область</a></li>
+                        <li><a href="?region=Карелия" class="hover:text-white transition-colors">Карелия</a></li>
+                        <li><a href="?region=Ленинградская область" class="hover:text-white transition-colors">Ленинградская область</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
+                <p>&copy; 2024 FishGuide. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Lakes page specific functionality
+        let allLakes = [];
+        let filteredLakes = [];
+        let currentPage = 1;
+        const lakesPerPage = 9;
+
+        // Initialize lakes page
+        function initializeLakesPage() {
+            allLakes = window.FishGuide?.lakesData || [];
+            setupEventListeners();
+            loadLakes();
+            
+            // Check for URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('region')) {
+                document.getElementById('region-filter').value = urlParams.get('region');
+                filterLakes();
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('search-input').addEventListener('input', debounce(filterLakes, 300));
+            document.getElementById('region-filter').addEventListener('change', filterLakes);
+            document.getElementById('fish-filter').addEventListener('change', filterLakes);
+            document.getElementById('season-filter').addEventListener('change', filterLakes);
+            document.getElementById('rating-filter').addEventListener('change', filterLakes);
+            document.getElementById('sort-filter').addEventListener('change', filterLakes);
+            document.getElementById('reset-filters').addEventListener('click', resetAllFilters);
+            document.getElementById('load-more').addEventListener('click', loadMoreLakes);
+        }
+
+        // Load lakes
+        function loadLakes() {
+            showLoading();
+            
+            // Simulate loading delay
+            setTimeout(() => {
+                filterLakes();
+                hideLoading();
+            }, 1000);
+        }
+
+        // Filter lakes
+        function filterLakes() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const regionFilter = document.getElementById('region-filter').value;
+            const fishFilter = document.getElementById('fish-filter').value;
+            const seasonFilter = document.getElementById('season-filter').value;
+            const ratingFilter = parseFloat(document.getElementById('rating-filter').value) || 0;
+            const sortBy = document.getElementById('sort-filter').value;
+
+            filteredLakes = allLakes.filter(lake => {
+                const matchesSearch = !searchTerm || 
+                    lake.name.toLowerCase().includes(searchTerm) || 
+                    lake.region.toLowerCase().includes(searchTerm) ||
+                    lake.description.toLowerCase().includes(searchTerm);
+                
+                const matchesRegion = !regionFilter || lake.region === regionFilter;
+                const matchesFish = !fishFilter || lake.fish_species.includes(fishFilter);
+                const matchesSeason = !seasonFilter || lake.best_season.includes(seasonFilter) || lake.best_season.includes('Круглый год');
+                const matchesRating = lake.rating >= ratingFilter;
+
+                return matchesSearch && matchesRegion && matchesFish && matchesSeason && matchesRating;
+            });
+
+            // Sort lakes
+            sortLakes(filteredLakes, sortBy);
+
+            // Reset pagination
+            currentPage = 1;
+            displayLakes();
+        }
+
+        // Sort lakes
+        function sortLakes(lakes, sortBy) {
+            switch (sortBy) {
+                case 'rating':
+                    lakes.sort((a, b) => b.rating - a.rating);
+                    break;
+                case 'name':
+                    lakes.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'distance':
+                    if (window.FishGuide?.userLocation) {
+                        lakes.sort((a, b) => {
+                            const distA = calculateDistance(a.coordinates, window.FishGuide.userLocation);
+                            const distB = calculateDistance(b.coordinates, window.FishGuide.userLocation);
+                            return distA - distB;
+                        });
+                    }
+                    break;
+                default: // popularity
+                    lakes.sort((a, b) => a.popularity - b.popularity);
+            }
+        }
+
+        // Display lakes
+        function displayLakes() {
+            const lakesGrid = document.getElementById('lakes-grid');
+            const resultsCount = document.getElementById('results-count');
+            const resultsText = document.getElementById('results-text');
+            const noResults = document.getElementById('no-results');
+            const loadMoreBtn = document.getElementById('load-more');
+
+            resultsCount.textContent = filteredLakes.length;
+            resultsText.textContent = filteredLakes.length === 0 ? 'Нет результатов' : 
+                filteredLakes.length === 1 ? 'озеро найдено' : 
+                filteredLakes.length < 5 ? 'озера найдены' : 'озер найдено';
+
+            if (filteredLakes.length === 0) {
+                lakesGrid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+                loadMoreBtn.classList.add('hidden');
+                return;
+            }
+
+            noResults.classList.add('hidden');
+            lakesGrid.classList.remove('hidden');
+
+            const startIndex = 0;
+            const endIndex = currentPage * lakesPerPage;
+            const lakesToShow = filteredLakes.slice(startIndex, endIndex);
+
+            lakesGrid.innerHTML = lakesToShow.map(lake => createLakeCardDetailed(lake)).join('');
+
+            // Show/hide load more button
+            if (endIndex < filteredLakes.length) {
+                loadMoreBtn.classList.remove('hidden');
+            } else {
+                loadMoreBtn.classList.add('hidden');
+            }
+
+            // Animate cards
+            anime({
+                targets: '.lake-card',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: anime.stagger(100),
+                duration: 600,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        // Create detailed lake card
+        function createLakeCardDetailed(lake) {
+            const distance = window.FishGuide?.userLocation ? 
+                calculateDistance(lake.coordinates, window.FishGuide.userLocation) : null;
+
+            return `
+                <div class="lake-card bg-white rounded-xl shadow-lg overflow-hidden card-hover" style="opacity: 0;">
+                    <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                        <div class="text-6xl">🏞️</div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm text-slate-600">${lake.region}</span>
+                            <div class="flex items-center">
+                                <span class="text-yellow-500">⭐</span>
+                                <span class="ml-1 text-sm font-medium">${lake.rating}</span>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-semibold mb-2">${lake.name}</h3>
+                        
+                        <p class="text-slate-600 text-sm mb-4 line-clamp-3">${lake.description}</p>
+                        
+                        <div class="mb-4">
+                            <div class="text-sm font-medium text-slate-700 mb-2">Виды рыб:</div>
+                            <div class="flex flex-wrap gap-1">
+                                ${lake.fish_species.slice(0, 4).map(fish => 
+                                    `<span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">${fish}</span>`
+                                ).join('')}
+                                ${lake.fish_species.length > 4 ? `<span class="text-xs text-slate-500">+${lake.fish_species.length - 4}</span>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="text-sm text-slate-600 mb-4">
+                            <div class="flex items-center justify-between">
+                                <span>Лучший сезон:</span>
+                                <span>${lake.best_season.slice(0, 3).join(', ')}</span>
+                            </div>
+                            ${distance ? `
+                                <div class="flex items-center justify-between mt-1">
+                                    <span>Расстояние:</span>
+                                    <span class="text-blue-600 font-medium">${formatDistance(distance)}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-slate-600">
+                                ${lake.infrastructure.slice(0, 2).join(', ')}
+                            </div>
+                            <a href="lake-detail.html?id=${lake.id}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                                Подробнее
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Load more lakes
+        function loadMoreLakes() {
+            currentPage++;
+            displayLakes();
+        }
+
+        // Reset all filters
+        function resetAllFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('region-filter').value = '';
+            document.getElementById('fish-filter').value = '';
+            document.getElementById('season-filter').value = '';
+            document.getElementById('rating-filter').value = '';
+            document.getElementById('sort-filter').value = 'popularity';
+            filterLakes();
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loading-state').classList.remove('hidden');
+            document.getElementById('lakes-grid').classList.add('hidden');
+            document.getElementById('no-results').classList.add('hidden');
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loading-state').classList.add('hidden');
+        }
+
+        // Utility functions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        function calculateDistance(coord1, coord2) {
+            const R = 6371;
+            const dLat = (coord2.lat - coord1.lat) * Math.PI / 180;
+            const dLon = (coord2.lon - coord1.lon) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(coord1.lat * Math.PI / 180) * Math.cos(coord2.lat * Math.PI / 180) *
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        function formatDistance(distance) {
+            if (distance < 1) {
+                return `${Math.round(distance * 1000)}м`;
+            }
+            return `${distance.toFixed(1)}км`;
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for main.js to load
+            setTimeout(initializeLakesPage, 100);
+        });
+    </script>
+</body>
+</html>

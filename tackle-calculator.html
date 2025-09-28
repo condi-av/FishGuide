@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор снастей - FishGuide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .text-gradient { background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .step-active { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; }
+        .step-completed { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+        .step-inactive { background: #e2e8f0; color: #64748b; }
+        .recommendation-card { transition: all 0.3s ease; }
+        .recommendation-card:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .progress-bar { transition: width 0.5s ease; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">🐟</div>
+                    <span class="text-xl font-bold text-gradient">FishGuide</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-slate-600 hover:text-blue-600 transition-colors">Главная</a>
+                    <a href="lakes.html" class="text-slate-600 hover:text-blue-600 transition-colors">Каталог озер</a>
+                    <a href="tackle-calculator.html" class="text-blue-600 font-medium">Подобрать снасти</a>
+                    <a href="fish-guide.html" class="text-slate-600 hover:text-blue-600 transition-colors">Справочник рыб</a>
+                </div>
+                <button class="md:hidden p-2" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed top-16 left-0 w-full bg-white border-b border-slate-200 z-40 hidden">
+        <div class="px-4 py-4 space-y-2">
+            <a href="index.html" class="block py-2 text-slate-600">Главная</a>
+            <a href="lakes.html" class="block py-2 text-slate-600">Каталог озер</a>
+            <a href="tackle-calculator.html" class="block py-2 text-blue-600 font-medium">Подобрать снасти</a>
+            <a href="fish-guide.html" class="block py-2 text-slate-600">Справочник рыб</a>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <section class="pt-24 pb-12 bg-gradient-to-br from-blue-600 to-blue-800">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="text-6xl mb-4">🎯</div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Калькулятор рыболовных снастей</h1>
+            <p class="text-xl text-blue-100 mb-8">Получите персональные рекомендации по удилищам, катушкам и приманкам</p>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section class="py-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-slate-600">Прогресс</span>
+                    <span id="progress-text" class="text-sm font-medium text-slate-600">Шаг 1 из 2</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div id="progress-bar" class="progress-bar bg-gradient-to-r from-blue-600 to-blue-800 h-2 rounded-full" style="width: 50%"></div>
+                </div>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="flex items-center justify-center mb-12">
+                <div class="flex items-center space-x-4">
+                    <div id="step1-indicator" class="step-active w-10 h-10 rounded-full flex items-center justify-center font-semibold">1</div>
+                    <div class="w-16 h-1 bg-slate-200"></div>
+                    <div id="step2-indicator" class="step-inactive w-10 h-10 rounded-full flex items-center justify-center font-semibold">2</div>
+                    <div class="w-16 h-1 bg-slate-200"></div>
+                    <div id="step3-indicator" class="step-inactive w-10 h-10 rounded-full flex items-center justify-center font-semibold">3</div>
+                </div>
+            </div>
+
+            <!-- Step 1: Fish Selection -->
+            <div id="step1" class="step-content">
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-6 text-center">Кого будем ловить?</h2>
+                    <p class="text-slate-600 text-center mb-8">Выберите целевую рыбу для получения точных рекомендаций</p>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Predatory Fish -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">🦈 Хищные</h3>
+                            <div id="predatory-fish" class="space-y-3">
+                                <!-- Fish options will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Peaceful Fish -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">🐟 Мирные</h3>
+                            <div id="peaceful-fish" class="space-y-3">
+                                <!-- Fish options will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Universal Fish -->
+                        <div class="space-y-4">
+                            <h3 class="text-lg font-semibold text-slate-800 mb-4">🎯 Универсальные</h3>
+                            <div id="universal-fish" class="space-y-3">
+                                <!-- Fish options will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-8">
+                        <button id="step1-next" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Далее →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Season Selection -->
+            <div id="step2" class="step-content hidden">
+                <div class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-3xl font-bold text-slate-800 mb-6 text-center">Когда едем на рыбалку?</h2>
+                    <p class="text-slate-600 text-center mb-8">Выберите сезон для подбора оптимальных снастей</p>
+                    
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="season-option cursor-pointer p-6 border-2 border-slate-200 rounded-xl hover:border-blue-500 transition-colors text-center" data-season="spring">
+                            <div class="text-4xl mb-3">🌸</div>
+                            <h3 class="text-xl font-semibold mb-2">Весна</h3>
+                            <p class="text-slate-600 text-sm">Март - Май</p>
+                            <p class="text-slate-500 text-xs mt-2">Активный клев после зимы</p>
+                        </div>
+                        
+                        <div class="season-option cursor-pointer p-6 border-2 border-slate-200 rounded-xl hover:border-blue-500 transition-colors text-center" data-season="summer">
+                            <div class="text-4xl mb-3">☀️</div>
+                            <h3 class="text-xl font-semibold mb-2">Лето</h3>
+                            <p class="text-slate-600 text-sm">Июнь - Август</p>
+                            <p class="text-slate-500 text-xs mt-2">Отличное время для рыбалки</p>
+                        </div>
+                        
+                        <div class="season-option cursor-pointer p-6 border-2 border-slate-200 rounded-xl hover:border-blue-500 transition-colors text-center" data-season="autumn">
+                            <div class="text-4xl mb-3">🍂</div>
+                            <h3 class="text-xl font-semibold mb-2">Осень</h3>
+                            <p class="text-slate-600 text-sm">Сентябрь - Ноябрь</p>
+                            <p class="text-slate-500 text-xs mt-2">Жор перед зимовкой</p>
+                        </div>
+                        
+                        <div class="season-option cursor-pointer p-6 border-2 border-slate-200 rounded-xl hover:border-blue-500 transition-colors text-center" data-season="winter">
+                            <div class="text-4xl mb-3">❄️</div>
+                            <h3 class="text-xl font-semibold mb-2">Зима</h3>
+                            <p class="text-slate-600 text-sm">Декабрь - Февраль</p>
+                            <p class="text-slate-500 text-xs mt-2">Зимняя рыбалка на льду</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button id="step2-back" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-8 py-3 rounded-lg font-semibold text-lg transition-colors">
+                            ← Назад
+                        </button>
+                        <button id="step2-next" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            Получить рекомендации →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Recommendations -->
+            <div id="step3" class="step-content hidden">
+                <div class="space-y-8">
+                    <!-- Summary -->
+                    <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-4">🎣 Ваш выбор</h2>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-slate-600">Целевая рыба:</span>
+                                <span id="summary-fish" class="font-semibold ml-2">-</span>
+                            </div>
+                            <div>
+                                <span class="text-slate-600">Сезон:</span>
+                                <span id="summary-season" class="font-semibold ml-2">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recommendations -->
+                    <div id="recommendations-container">
+                        <!-- Recommendations will be loaded here -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-between">
+                        <button id="step3-back" class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-8 py-3 rounded-lg font-semibold text-lg transition-colors">
+                            ← Назад
+                        </button>
+                        <button onclick="resetCalculator()" class="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold text-lg transition-colors">
+                            🔄 Новый расчет
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="text-2xl">🐟</div>
+                        <span class="text-xl font-bold text-gradient">FishGuide</span>
+                    </div>
+                    <p class="text-slate-400">Путеводитель по рыболовным озерам России</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Навигация</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="index.html" class="hover:text-white transition-colors">Главная</a></li>
+                        <li><a href="lakes.html" class="hover:text-white transition-colors">Каталог озер</a></li>
+                        <li><a href="fish-guide.html" class="hover:text-white transition-colors">Справочник рыб</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Популярные рыбы</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="fish-guide.html?fish=Щука" class="hover:text-white transition-colors">Щука</a></li>
+                        <li><a href="fish-guide.html?fish=Окунь" class="hover:text-white transition-colors">Окунь</a></li>
+                        <li><a href="fish-guide.html?fish=Лещ" class="hover:text-white transition-colors">Лещ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
+                <p>&copy; 2024 FishGuide. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Calculator state
+        let currentStep = 1;
+        let selectedFish = null;
+        let selectedSeason = null;
+        let fishData = [];
+
+        // Initialize calculator
+        function initializeTackleCalculator() {
+            fishData = window.FishGuide?.fishData || [];
+            loadFishOptions();
+            setupEventListeners();
+        }
+
+        // Load fish options
+        function loadFishOptions() {
+            const predatoryFish = document.getElementById('predatory-fish');
+            const peacefulFish = document.getElementById('peaceful-fish');
+            const universalFish = document.getElementById('universal-fish');
+
+            const predatory = fishData.filter(fish => fish.type === 'хищная');
+            const peaceful = fishData.filter(fish => fish.type === 'мирная');
+            const universal = ['Щука', 'Окунь', 'Лещ', 'Судак']; // Popular universal fish
+
+            predatoryFish.innerHTML = predatory.map(fish => createFishOption(fish)).join('');
+            peacefulFish.innerHTML = peaceful.map(fish => createFishOption(fish)).join('');
+            universalFish.innerHTML = universal.map(fishName => {
+                const fish = fishData.find(f => f.name === fishName) || { name: fishName, type: 'универсальная' };
+                return createFishOption(fish);
+            }).join('');
+        }
+
+        // Create fish option
+        function createFishOption(fish) {
+            return `
+                <div class="fish-option cursor-pointer p-3 border-2 border-slate-200 rounded-lg hover:border-blue-500 transition-colors" data-fish="${fish.name}">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">${getFishIcon(fish.type)}</div>
+                        <div>
+                            <div class="font-medium">${fish.name}</div>
+                            <div class="text-sm text-slate-600">${fish.type || 'универсальная'}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get fish icon by type
+        function getFishIcon(type) {
+            switch(type) {
+                case 'хищная': return '🦈';
+                case 'мирная': return '🐟';
+                default: return '🎯';
+            }
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Fish selection
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.fish-option')) {
+                    selectFish(e.target.closest('.fish-option'));
+                }
+            });
+
+            // Season selection
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.season-option')) {
+                    selectSeason(e.target.closest('.season-option'));
+                }
+            });
+
+            // Navigation buttons
+            document.getElementById('step1-next').addEventListener('click', () => goToStep(2));
+            document.getElementById('step2-back').addEventListener('click', () => goToStep(1));
+            document.getElementById('step2-next').addEventListener('click', () => goToStep(3));
+            document.getElementById('step3-back').addEventListener('click', () => goToStep(2));
+        }
+
+        // Select fish
+        function selectFish(fishElement) {
+            // Remove previous selection
+            document.querySelectorAll('.fish-option').forEach(el => {
+                el.classList.remove('border-blue-500', 'bg-blue-50');
+                el.classList.add('border-slate-200');
+            });
+
+            // Add selection to clicked element
+            fishElement.classList.remove('border-slate-200');
+            fishElement.classList.add('border-blue-500', 'bg-blue-50');
+
+            selectedFish = fishElement.dataset.fish;
+            document.getElementById('step1-next').disabled = false;
+        }
+
+        // Select season
+        function selectSeason(seasonElement) {
+            // Remove previous selection
+            document.querySelectorAll('.season-option').forEach(el => {
+                el.classList.remove('border-blue-500', 'bg-blue-50');
+                el.classList.add('border-slate-200');
+            });
+
+            // Add selection to clicked element
+            seasonElement.classList.remove('border-slate-200');
+            seasonElement.classList.add('border-blue-500', 'bg-blue-50');
+
+            selectedSeason = seasonElement.dataset.season;
+            document.getElementById('step2-next').disabled = false;
+        }
+
+        // Go to step
+        function goToStep(step) {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            // Show target step
+            document.getElementById(`step${step}`).classList.remove('hidden');
+
+            // Update step indicators
+            updateStepIndicators(step);
+
+            // Update progress
+            updateProgress(step);
+
+            // Generate recommendations if going to step 3
+            if (step === 3) {
+                generateRecommendations();
+            }
+
+            currentStep = step;
+        }
+
+        // Update step indicators
+        function updateStepIndicators(currentStep) {
+            for (let i = 1; i <= 3; i++) {
+                const indicator = document.getElementById(`step${i}-indicator`);
+                
+                if (i < currentStep) {
+                    indicator.className = 'step-completed w-10 h-10 rounded-full flex items-center justify-center font-semibold';
+                    indicator.innerHTML = '✓';
+                } else if (i === currentStep) {
+                    indicator.className = 'step-active w-10 h-10 rounded-full flex items-center justify-center font-semibold';
+                    indicator.innerHTML = i;
+                } else {
+                    indicator.className = 'step-inactive w-10 h-10 rounded-full flex items-center justify-center font-semibold';
+                    indicator.innerHTML = i;
+                }
+            }
+        }
+
+        // Update progress
+        function updateProgress(step) {
+            const progress = (step / 3) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `Шаг ${step} из 3`;
+        }
+
+        // Generate recommendations
+        function generateRecommendations() {
+            // Update summary
+            const seasonNames = {
+                spring: 'Весна',
+                summer: 'Лето',
+                autumn: 'Осень',
+                winter: 'Зима'
+            };
+
+            document.getElementById('summary-fish').textContent = selectedFish;
+            document.getElementById('summary-season').textContent = seasonNames[selectedSeason];
+
+            // Generate recommendations based on fish and season
+            const recommendations = getRecommendations(selectedFish, selectedSeason);
+            
+            const container = document.getElementById('recommendations-container');
+            container.innerHTML = recommendations.map(rec => createRecommendationCard(rec)).join('');
+
+            // Animate recommendations
+            anime({
+                targets: '.recommendation-card',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: anime.stagger(100),
+                duration: 600,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        // Get recommendations
+        function getRecommendations(fish, season) {
+            const recommendations = {
+                'Щука': {
+                    rod: { name: 'Спиннинг среднего класса', length: '2.1-2.4м', power: 'Medium-Heavy', price: 'от 3000₽' },
+                    reel: { name: 'Безынерционная катушка', size: '3000-4000', ratio: '5.2:1-6.2:1', price: 'от 2000₽' },
+                    line: { name: 'Плетеная леска', diameter: '0.20-0.25мм', strength: '15-20кг', price: 'от 500₽' },
+                    lures: ['Крупные воблеры', 'Силиконовые приманки', 'Блесны', 'Попперы'],
+                    tips: 'Лучшее время - раннее утро и вечер. Используйте проводку с паузами.'
+                },
+                'Окунь': {
+                    rod: { name: 'Легкий спиннинг', length: '1.8-2.1м', power: 'Light-Medium', price: 'от 2000₽' },
+                    reel: { name: 'Безынерционная катушка', size: '2000-3000', ratio: '5.8:1-6.4:1', price: 'от 1500₽' },
+                    line: { name: 'Плетеная леска', diameter: '0.12-0.18мм', strength: '8-12кг', price: 'от 400₽' },
+                    lures: ['Мелкие воблеры', 'Микроблесны', 'Силиконовые червяки', 'Твистеры'],
+                    tips: 'Активен круглый год. Зимой отлично клюет на блесны.'
+                },
+                'Лещ': {
+                    rod: { name: 'Фидерное удилище', length: '3.6-4.2м', power: 'Medium', price: 'от 2500₽' },
+                    reel: { name: 'Безынерционная катушка', size: '4000-5000', ratio: '4.8:1-5.5:1', price: 'от 1800₽' },
+                    line: { name: 'Монофильная леска', diameter: '0.20-0.25мм', strength: '6-10кг', price: 'от 300₽' },
+                    lures: ['Опарыш', 'Червь', 'Кукуруза', 'Тесто'],
+                    tips: 'Требует точной прикормки. Лучшее время - утро и вечер.'
+                },
+                'Судак': {
+                    rod: { name: 'Спиннинг', length: '2.1-2.4м', power: 'Medium', price: 'от 2800₽' },
+                    reel: { name: 'Безынерционная катушка', size: '2500-3500', ratio: '5.2:1-6.0:1', price: 'от 1700₽' },
+                    line: { name: 'Плетеная леска', diameter: '0.18-0.22мм', strength: '12-16кг', price: 'от 450₽' },
+                    lures: ['Джиговые приманки', 'Воблеры', 'Блесны', 'Твистеры'],
+                    tips: 'Лучшее время - сумерки и ночь. Используйте джиговую проводку.'
+                },
+                'Язь': {
+                    rod: { name: 'Поплавочное удилище', length: '3.0-4.5м', power: 'Light-Medium', price: 'от 1500₽' },
+                    reel: { name: 'Безынерционная катушка', size: '3000-4000', ratio: '5.0:1-5.8:1', price: 'от 1200₽' },
+                    line: { name: 'Монофильная леска', diameter: '0.18-0.22мм', strength: '8-12кг', price: 'от 350₽' },
+                    lures: ['Червь', 'Опарыш', 'Кукуруза', 'Живец'],
+                    tips: 'Очень сильная рыба. Используйте надежные снасти.'
+                },
+                'Плотва': {
+                    rod: { name: 'Легкая поплавочная удочка', length: '2.7-3.6м', power: 'Light', price: 'от 1000₽' },
+                    reel: { name: 'Безынерционная катушка', size: '1000-2500', ratio: '5.2:1-5.8:1', price: 'от 800₽' },
+                    line: { name: 'Монофильная леска', diameter: '0.10-0.14мм', strength: '3-6кг', price: 'от 200₽' },
+                    lures: ['Мотыль', 'Опарыш', 'Тесто', 'Короед'],
+                    tips: 'Отличная наживка для хищной рыбы. Клюет круглый год.'
+                }
+            };
+
+            const baseRec = recommendations[fish] || recommendations['Окунь'];
+            
+            // Season adjustments
+            const seasonAdjustments = {
+                winter: {
+                    line: { name: 'Леска для зимней рыбалки', diameter: '0.12-0.16мм', strength: '5-8кг', price: 'от 300₽' },
+                    lures: ['Блесны', 'Балансиры', 'Мормышки'],
+                    tips: 'Используйте зимние снасти. Лунки лучше сверлить заранее.'
+                },
+                spring: {
+                    tips: 'Рыба активна после зимы. Используйте яркие приманки.'
+                },
+                autumn: {
+                    tips: 'Жор перед зимовкой. Рыба берет активно.'
+                }
+            };
+
+            const adjustedRec = { ...baseRec };
+            if (seasonAdjustments[season]) {
+                Object.assign(adjustedRec, seasonAdjustments[season]);
+            }
+
+            return [
+                {
+                    title: '🎣 Удилище',
+                    icon: '🎣',
+                    items: [adjustedRec.rod],
+                    description: 'Основной элемент снасти'
+                },
+                {
+                    title: '🔄 Катушка',
+                    icon: '🔄',
+                    items: [adjustedRec.reel],
+                    description: 'Для намотки лески'
+                },
+                {
+                    title: '🧵 Леска',
+                    icon: '🧵',
+                    items: [adjustedRec.line],
+                    description: 'Связующее звено'
+                },
+                {
+                    title: '🪝 Приманки',
+                    icon: '🪝',
+                    items: adjustedRec.lures.map(lure => ({ name: lure })),
+                    description: adjustedRec.tips
+                }
+            ];
+        }
+
+        // Create recommendation card
+        function createRecommendationCard(rec) {
+            return `
+                <div class="recommendation-card bg-white rounded-xl shadow-lg p-6" style="opacity: 0;">
+                    <div class="flex items-center mb-4">
+                        <div class="text-3xl mr-4">${rec.icon}</div>
+                        <h3 class="text-2xl font-bold text-slate-800">${rec.title}</h3>
+                    </div>
+                    <p class="text-slate-600 mb-6">${rec.description}</p>
+                    
+                    <div class="grid gap-4">
+                        ${rec.items.map(item => `
+                            <div class="bg-slate-50 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-semibold text-slate-800">${item.name}</div>
+                                        ${item.length ? `<div class="text-sm text-slate-600">Длина: ${item.length}</div>` : ''}
+                                        ${item.power ? `<div class="text-sm text-slate-600">Тест: ${item.power}</div>` : ''}
+                                        ${item.diameter ? `<div class="text-sm text-slate-600">Диаметр: ${item.diameter}</div>` : ''}
+                                        ${item.strength ? `<div class="text-sm text-slate-600">Прочность: ${item.strength}</div>` : ''}
+                                    </div>
+                                    ${item.price ? `<div class="text-lg font-bold text-green-600">${item.price}</div>` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Reset calculator
+        function resetCalculator() {
+            selectedFish = null;
+            selectedSeason = null;
+            
+            // Reset selections
+            document.querySelectorAll('.fish-option').forEach(el => {
+                el.classList.remove('border-blue-500', 'bg-blue-50');
+                el.classList.add('border-slate-200');
+            });
+            
+            document.querySelectorAll('.season-option').forEach(el => {
+                el.classList.remove('border-blue-500', 'bg-blue-50');
+                el.classList.add('border-slate-200');
+            });
+            
+            // Disable buttons
+            document.getElementById('step1-next').disabled = true;
+            document.getElementById('step2-next').disabled = true;
+            
+            // Go to first step
+            goToStep(1);
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for main.js to load
+            setTimeout(initializeTackleCalculator, 100);
+        });
+    </script>
+</body>
+</html>

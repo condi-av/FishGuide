@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Справочник рыб - FishGuide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .text-gradient { background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .fish-card { transition: all 0.3s ease; }
+        .fish-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.1); }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal.show { display: flex; align-items: center; justify-content: center; }
+        .modal-content { background: white; border-radius: 12px; max-width: 800px; max-height: 90vh; overflow-y: auto; }
+        .filter-active { background-color: #f97316; color: white; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">🐟</div>
+                    <span class="text-xl font-bold text-gradient">FishGuide</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-slate-600 hover:text-blue-600 transition-colors">Главная</a>
+                    <a href="lakes.html" class="text-slate-600 hover:text-blue-600 transition-colors">Каталог озер</a>
+                    <a href="tackle-calculator.html" class="text-slate-600 hover:text-blue-600 transition-colors">Подобрать снасти</a>
+                    <a href="fish-guide.html" class="text-blue-600 font-medium">Справочник рыб</a>
+                </div>
+                <button class="md:hidden p-2" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed top-16 left-0 w-full bg-white border-b border-slate-200 z-40 hidden">
+        <div class="px-4 py-4 space-y-2">
+            <a href="index.html" class="block py-2 text-slate-600">Главная</a>
+            <a href="lakes.html" class="block py-2 text-slate-600">Каталог озер</a>
+            <a href="tackle-calculator.html" class="block py-2 text-slate-600">Подобрать снасти</a>
+            <a href="fish-guide.html" class="block py-2 text-blue-600 font-medium">Справочник рыб</a>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <section class="pt-24 pb-12 bg-gradient-to-br from-blue-600 to-blue-800">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="text-6xl mb-4">📚</div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Полный справочник рыб</h1>
+            <p class="text-xl text-blue-100 mb-8">Изучите виды рыб, их повадки, среды обитания и лучшие способы ловли</p>
+            
+            <!-- Search Bar -->
+            <div class="max-w-2xl mx-auto">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="search-input"
+                        placeholder="Поиск по названию или описанию..."
+                        class="w-full px-6 py-4 text-lg rounded-lg border-0 focus:ring-4 focus:ring-blue-300 outline-none"
+                    >
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-blue-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="py-8 bg-white border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <!-- Category Filter -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-700">Категория:</label>
+                    <div class="flex space-x-2">
+                        <button class="filter-btn filter-active px-4 py-2 rounded-lg text-sm font-medium transition-colors" data-category="all">
+                            Все
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-slate-100 hover:bg-slate-200" data-category="predatory">
+                            Хищные
+                        </button>
+                        <button class="filter-btn px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-slate-100 hover:bg-slate-200" data-category="peaceful">
+                            Мирные
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sort Options -->
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-slate-700">Сортировка:</label>
+                    <select id="sort-filter" class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="name">По названию (А-Я)</option>
+                        <option value="name-desc">По названию (Я-А)</option>
+                        <option value="type">По типу</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section class="py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Results Counter -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">Найдено рыб: <span id="results-count">0</span></h2>
+                    <p class="text-slate-600" id="results-text">Загрузка...</p>
+                </div>
+            </div>
+
+            <!-- Fish Grid -->
+            <div id="fish-grid" class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Fish cards will be loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Fish Detail Modal -->
+    <div id="fish-modal" class="modal">
+        <div class="modal-content w-full mx-4">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 id="modal-title" class="text-2xl font-bold text-slate-800">Название рыбы</h2>
+                    <button onclick="closeFishModal()" class="text-slate-400 hover:text-slate-600 text-2xl">×</button>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="bg-slate-200 rounded-lg h-48 flex items-center justify-center mb-4">
+                            <div id="modal-fish-icon" class="text-6xl">🐟</div>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <h3 class="font-semibold text-slate-800 mb-2">Тип:</h3>
+                                <span id="modal-type" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">Тип рыбы</span>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-slate-800 mb-2">Лучшее время ловли:</h3>
+                                <div id="modal-seasons" class="flex flex-wrap gap-2">
+                                    <!-- Seasons will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="font-semibold text-slate-800 mb-2">Описание:</h3>
+                            <p id="modal-description" class="text-slate-600">Описание рыбы</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold text-slate-800 mb-2">Среда обитания:</h3>
+                            <p id="modal-habitat" class="text-slate-600">Среда обитания</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold text-slate-800 mb-2">Рекомендации по снастям:</h3>
+                            <p id="modal-tackle" class="text-slate-600">Рекомендации</p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="font-semibold text-slate-800 mb-2">Лучшее время клева:</h3>
+                            <p id="modal-biting" class="text-slate-600">Время клева</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-slate-200">
+                    <button onclick="goToCalculator()" class="w-full bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                        Подобрать снасти для этой рыбы
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="text-2xl">🐟</div>
+                        <span class="text-xl font-bold text-gradient">FishGuide</span>
+                    </div>
+                    <p class="text-slate-400">Путеводитель по рыболовным озерам России</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Навигация</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="index.html" class="hover:text-white transition-colors">Главная</a></li>
+                        <li><a href="lakes.html" class="hover:text-white transition-colors">Каталог озер</a></li>
+                        <li><a href="tackle-calculator.html" class="hover:text-white transition-colors">Калькулятор снастей</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Популярные рыбы</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="?fish=Щука" class="hover:text-white transition-colors">Щука</a></li>
+                        <li><a href="?fish=Окунь" class="hover:text-white transition-colors">Окунь</a></li>
+                        <li><a href="?fish=Лещ" class="hover:text-white transition-colors">Лещ</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
+                <p>&copy; 2024 FishGuide. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+    <script>
+        // Fish guide state
+        let allFish = [];
+        let filteredFish = [];
+        let currentCategory = 'all';
+        let currentSort = 'name';
+
+        // Initialize fish guide
+        function initializeFishGuide() {
+            allFish = window.FishGuide?.fishData || [];
+            
+            // Generate additional fish if needed
+            if (allFish.length < 50) {
+                allFish = generateAdditionalFish(allFish);
+            }
+            
+            setupEventListeners();
+            loadFish();
+            
+            // Check for URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('fish')) {
+                const searchInput = document.getElementById('search-input');
+                searchInput.value = urlParams.get('fish');
+                filterFish();
+            }
+        }
+
+        // Generate additional fish data
+        function generateAdditionalFish(existingFish) {
+            const additionalFish = [
+                // Хищные рыбы
+                { id: 11, name: 'Сом', type: 'хищная', description: 'Крупная хищная рыба с усиками. Охотится ночью на дне водоемов.', habitat: 'Глубокие реки и озера с твердым дном', tackle_recommendations: 'Мощное удилище, прочная леска 0.30мм+, крупные крючки', best_biting_time: 'Ночью, особенно в теплые месяцы', seasons: ['Лето', 'Осень'] },
+                { id: 12, name: 'Стерлядь', type: 'хищная', description: 'Древняя хищная рыба с вытянутым телом. Очень осторожная и редкая.', habitat: 'Большие реки с чистой водой', tackle_recommendations: 'Чувствительное удилище, леска 0.18-0.22мм, живец', best_biting_time: 'Раннее утро и вечер', seasons: ['Весна', 'Осень'] },
+                { id: 13, name: 'Жерех', type: 'хищная', description: 'Быстрая хищная рыба с серебристым боком. Отлично прыгает при вываживании.', habitat: 'Быстрые реки с чистой водой', tackle_recommendations: 'Легкий спиннинг, леска 0.14-0.18мм, мелкие воблеры', best_biting_time: 'Утро и вечер в теплое время', seasons: ['Весна', 'Лето', 'Осень'] },
+                { id: 14, name: 'Берш', type: 'хищная', description: 'Речная хищная рыба, родственник окуня. Окрас темный с желтыми пятнами.', habitat: 'Реки с умеренным течением и каменистым дном', tackle_recommendations: 'Спиннинг, леска 0.16-0.20мм, воблеры и блесны', best_biting_time: 'Круглый год, активен зимой', seasons: ['Зима', 'Весна', 'Осень'] },
+                { id: 15, name: 'Таймень', type: 'хищная', description: 'Крупнейшая лососевая рыба. Редкий и охраняемый вид.', habitat: 'Чистые горные реки Сибири', tackle_recommendations: 'Мощный спиннинг, плетенка 0.25мм+, крупные приманки', best_biting_time: 'Сумерки и ночь', seasons: ['Лето', 'Осень'] },
+                
+                // Мирные рыбы
+                { id: 16, name: 'Карась', type: 'мирная', description: 'Популярная мирная рыба золотистого цвета. Очень живучая и неприхотливая.', habitat: 'Стоячие водоемы с мягким дном и растительностью', tackle_recommendations: 'Поплавочная удочка, леска 0.12-0.18мм, червь, опарыш', best_biting_time: 'Утро и вечер, особенно в теплую погоду', seasons: ['Весна', 'Лето', 'Осень'] },
+                { id: 17, name: 'Сазан', type: 'мирная', description: 'Крупнейшая мирная рыба Европы. Может достигать 50+ кг.', habitat: 'Большие реки и озера с теплой водой', tackle_recommendations: 'Карповое удилище, плетенка 0.30мм+, бойлы', best_biting_time: 'Ночь в теплые месяцы', seasons: ['Лето'] },
+                { id: 18, name: 'Толстолобик', type: 'мирная', description: 'Крупная рыба с толстой губой. Питается планктоном и растениями.', habitat: 'Озера и водохранилища с обилием фитопланктона', tackle_recommendations: 'Мощное удилище, леска 0.25-0.30мм, растительная насадка', best_biting_time: 'Жаркий день', seasons: ['Лето'] },
+                { id: 19, name: 'Амур', type: 'мирная', description: 'Крупная рыба, поедающая водную растительность. Быстро растет.', habitat: 'Озера и пруды с обилием водной растительности', tackle_recommendations: 'Фидер, леска 0.22-0.28мм, кукуруза, горох', best_biting_time: 'Теплые дни', seasons: ['Лето', 'Осень'] },
+                { id: 20, name: 'Густера', type: 'мирная', description: 'Маленькая серебристая рыбка, похожая на плотву. Очень осторожная.', habitat: 'Чистые реки и озера с твердым дном', tackle_recommendations: 'Легкая удочка, леска 0.08-0.12мм, мотыль', best_biting_time: 'Утро и вечер', seasons: ['Весна', 'Лето', 'Осень'] }
+            ];
+            
+            return [...existingFish, ...additionalFish];
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Search
+            document.getElementById('search-input').addEventListener('input', debounce(filterFish, 300));
+            
+            // Category filters
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    setActiveFilter(this);
+                    currentCategory = this.dataset.category;
+                    filterFish();
+                });
+            });
+            
+            // Sort
+            document.getElementById('sort-filter').addEventListener('change', function() {
+                currentSort = this.value;
+                filterFish();
+            });
+            
+            // Modal close
+            document.getElementById('fish-modal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeFishModal();
+                }
+            });
+        }
+
+        // Load fish
+        function loadFish() {
+            filteredFish = [...allFish];
+            displayFish();
+        }
+
+        // Filter fish
+        function filterFish() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            filteredFish = allFish.filter(fish => {
+                const matchesSearch = !searchTerm || 
+                    fish.name.toLowerCase().includes(searchTerm) || 
+                    fish.description.toLowerCase().includes(searchTerm) ||
+                    fish.habitat.toLowerCase().includes(searchTerm);
+                
+                const matchesCategory = currentCategory === 'all' || fish.type === getCategoryType(currentCategory);
+                
+                return matchesSearch && matchesCategory;
+            });
+
+            // Sort fish
+            sortFish(filteredFish, currentSort);
+            
+            displayFish();
+        }
+
+        // Get category type
+        function getCategoryType(category) {
+            const types = {
+                'predatory': 'хищная',
+                'peaceful': 'мирная'
+            };
+            return types[category] || 'all';
+        }
+
+        // Sort fish
+        function sortFish(fish, sortBy) {
+            switch (sortBy) {
+                case 'name':
+                    fish.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'name-desc':
+                    fish.sort((a, b) => b.name.localeCompare(a.name));
+                    break;
+                case 'type':
+                    fish.sort((a, b) => a.type.localeCompare(b.type));
+                    break;
+            }
+        }
+
+        // Display fish
+        function displayFish() {
+            const fishGrid = document.getElementById('fish-grid');
+            const resultsCount = document.getElementById('results-count');
+            const resultsText = document.getElementById('results-text');
+
+            resultsCount.textContent = filteredFish.length;
+            resultsText.textContent = filteredFish.length === 0 ? 'Нет результатов' : 
+                filteredFish.length === 1 ? 'рыба найдена' : 
+                filteredFish.length < 5 ? 'рыбы найдены' : 'рыб найдено';
+
+            fishGrid.innerHTML = filteredFish.map(fish => createFishCard(fish)).join('');
+
+            // Animate cards
+            anime({
+                targets: '.fish-card',
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: anime.stagger(50),
+                duration: 400,
+                easing: 'easeOutQuart'
+            });
+        }
+
+        // Create fish card
+        function createFishCard(fish) {
+            const typeColor = fish.type === 'хищная' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800';
+            const seasons = fish.seasons || ['Весна', 'Лето', 'Осень'];
+            
+            return `
+                <div class="fish-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="openFishModal(${fish.id})" style="opacity: 0;">
+                    <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
+                        <div class="text-6xl">${getFishIcon(fish.type)}</div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs px-2 py-1 rounded-full ${typeColor}">${fish.type || 'универсальная'}</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-2">${fish.name}</h3>
+                        <p class="text-slate-600 text-sm mb-4 line-clamp-3">${fish.description}</p>
+                        <div class="mb-4">
+                            <div class="text-sm font-medium text-slate-700 mb-1">Лучшее время:</div>
+                            <div class="flex flex-wrap gap-1">
+                                ${seasons.slice(0, 3).map(season => 
+                                    `<span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">${season}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        <div class="text-sm text-blue-600 font-medium">
+                            Подробнее →
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Get fish icon by type
+        function getFishIcon(type) {
+            switch(type) {
+                case 'хищная': return '🦈';
+                case 'мирная': return '🐟';
+                default: return '🐠';
+            }
+        }
+
+        // Set active filter
+        function setActiveFilter(activeBtn) {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('filter-active');
+                btn.classList.add('bg-slate-100', 'hover:bg-slate-200');
+            });
+            
+            activeBtn.classList.add('filter-active');
+            activeBtn.classList.remove('bg-slate-100', 'hover:bg-slate-200');
+        }
+
+        // Open fish modal
+        function openFishModal(fishId) {
+            const fish = allFish.find(f => f.id === fishId);
+            if (!fish) return;
+
+            document.getElementById('modal-title').textContent = fish.name;
+            document.getElementById('modal-fish-icon').textContent = getFishIcon(fish.type);
+            document.getElementById('modal-type').textContent = fish.type || 'универсальная';
+            document.getElementById('modal-type').className = fish.type === 'хищная' ? 
+                'bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm' : 
+                'bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm';
+            document.getElementById('modal-description').textContent = fish.description;
+            document.getElementById('modal-habitat').textContent = fish.habitat || 'Информация отсутствует';
+            document.getElementById('modal-tackle').textContent = fish.tackle_recommendations || 'Стандартный набор снастей';
+            document.getElementById('modal-biting').textContent = fish.best_biting_time || 'Утро и вечер';
+
+            // Load seasons
+            const seasons = fish.seasons || ['Весна', 'Лето', 'Осень'];
+            document.getElementById('modal-seasons').innerHTML = seasons.map(season => 
+                `<span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">${season}</span>`
+            ).join('');
+
+            document.getElementById('fish-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Close fish modal
+        function closeFishModal() {
+            document.getElementById('fish-modal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Go to calculator with selected fish
+        function goToCalculator() {
+            const fishName = document.getElementById('modal-title').textContent;
+            window.location.href = `tackle-calculator.html?fish=${encodeURIComponent(fishName)}`;
+        }
+
+        // Utility functions
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for main.js to load
+            setTimeout(initializeFishGuide, 100);
+        });
+    </script>
+</body>
+</html>

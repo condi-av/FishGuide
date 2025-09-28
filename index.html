@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FishGuide - Путеводитель по рыболовным озерам России</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .hero-bg { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); }
+        .text-gradient { background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+        .splide__arrow { background: #f97316 !important; }
+        .splide__arrow svg { fill: white !important; }
+        #p5-background { position: fixed; top: 0; left: 0; z-index: -1; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md z-50 border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="text-2xl">🐟</div>
+                    <span class="text-xl font-bold text-gradient">FishGuide</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-blue-600 font-medium">Главная</a>
+                    <a href="lakes.html" class="text-slate-600 hover:text-blue-600 transition-colors">Каталог озер</a>
+                    <a href="tackle-calculator.html" class="text-slate-600 hover:text-blue-600 transition-colors">Подобрать снасти</a>
+                    <a href="fish-guide.html" class="text-slate-600 hover:text-blue-600 transition-colors">Справочник рыб</a>
+                </div>
+                <button class="md:hidden p-2" onclick="toggleMobileMenu()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="fixed top-16 left-0 w-full bg-white border-b border-slate-200 z-40 hidden">
+        <div class="px-4 py-4 space-y-2">
+            <a href="index.html" class="block py-2 text-blue-600 font-medium">Главная</a>
+            <a href="lakes.html" class="block py-2 text-slate-600">Каталог озер</a>
+            <a href="tackle-calculator.html" class="block py-2 text-slate-600">Подобрать снасти</a>
+            <a href="fish-guide.html" class="block py-2 text-slate-600">Справочник рыб</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero-bg min-h-screen flex items-center relative overflow-hidden pt-16">
+        <div class="absolute inset-0 bg-black/20"></div>
+        <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="animate-float mb-8">
+                <div class="text-8xl mb-4">🎣</div>
+            </div>
+            <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                Найдите лучшие<br>
+                <span class="text-orange-400">озера для рыбалки</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
+                Полный справочник рыбных озер России с картами, прогнозами клева, 
+                калькулятором снастей и полезными советами для успешной рыбалки.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="lakes.html" class="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 transform hover:scale-105">
+                    Найти озера на карте
+                </a>
+                <a href="tackle-calculator.html" class="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 border border-white/30">
+                    Подобрать снасти
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Lakes Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-slate-800 mb-4">Популярные озера</h2>
+                <p class="text-xl text-slate-600">Лучшие места для рыбалки по отзывам рыбаков</p>
+            </div>
+            
+            <div class="splide" id="popular-lakes-slider">
+                <div class="splide__track">
+                    <ul class="splide__list" id="popular-lakes-list">
+                        <!-- Lakes will be loaded here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-slate-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-slate-800 mb-4">Почему выбирают FishGuide</h2>
+                <p class="text-xl text-slate-600">Все необходимое для успешной рыбалки в одном месте</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="text-center card-hover bg-white p-8 rounded-xl shadow-lg">
+                    <div class="text-5xl mb-4">🗺️</div>
+                    <h3 class="text-xl font-semibold mb-2">Интерактивные карты</h3>
+                    <p class="text-slate-600">Найдите ближайшие озера и проложите маршрут</p>
+                </div>
+                
+                <div class="text-center card-hover bg-white p-8 rounded-xl shadow-lg">
+                    <div class="text-5xl mb-4">🌤️</div>
+                    <h3 class="text-xl font-semibold mb-2">Прогноз клева</h3>
+                    <p class="text-slate-600">Точный прогноз на 3 дня для каждого озера</p>
+                </div>
+                
+                <div class="text-center card-hover bg-white p-8 rounded-xl shadow-lg">
+                    <div class="text-5xl mb-4">🎯</div>
+                    <h3 class="text-xl font-semibold mb-2">Калькулятор снастей</h3>
+                    <p class="text-slate-600">Персональные рекомендации по выбору снастей</p>
+                </div>
+                
+                <div class="text-center card-hover bg-white p-8 rounded-xl shadow-lg">
+                    <div class="text-5xl mb-4">📚</div>
+                    <h3 class="text-xl font-semibold mb-2">Справочник рыб</h3>
+                    <p class="text-slate-600">Полная информация о видах рыб и методах ловли</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-blue-600">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-white mb-6">Готовы к рыбалке?</h2>
+            <p class="text-xl text-blue-100 mb-8">Начните планировать свою следующую рыбалку прямо сейчас</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="lakes.html" class="bg-orange-500 hover:bg-orange-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300">
+                    Найти озера
+                </a>
+                <a href="fish-guide.html" class="bg-white/20 hover:bg-white/30 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all duration-300 border border-white/30">
+                    Изучить рыб
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="text-2xl">🐟</div>
+                        <span class="text-xl font-bold text-gradient">FishGuide</span>
+                    </div>
+                    <p class="text-slate-400">Путеводитель по рыболовным озерам России</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Навигация</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="lakes.html" class="hover:text-white transition-colors">Каталог озер</a></li>
+                        <li><a href="tackle-calculator.html" class="hover:text-white transition-colors">Калькулятор снастей</a></li>
+                        <li><a href="fish-guide.html" class="hover:text-white transition-colors">Справочник рыб</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Популярные регионы</h3>
+                    <ul class="space-y-2 text-slate-400">
+                        <li><a href="lakes.html?region=Тверская область" class="hover:text-white transition-colors">Тверская область</a></li>
+                        <li><a href="lakes.html?region=Карелия" class="hover:text-white transition-colors">Карелия</a></li>
+                        <li><a href="lakes.html?region=Ленинградская область" class="hover:text-white transition-colors">Ленинградская область</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-700 mt-8 pt-8 text-center text-slate-400">
+                <p>&copy; 2024 FishGuide. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>
