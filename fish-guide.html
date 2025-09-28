@@ -488,10 +488,12 @@
             menu.classList.toggle('hidden');
         }
 
-        // Initialize when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Wait for main.js to load
-            setTimeout(initializeFishGuide, 100);
+             // Initialize when DOM is loaded
+           document.addEventListener('DOMContentLoaded', function() {
+            console.log('Fish guide page loaded, waiting for data...');
+    
+        // The main.js will automatically call initializeFishGuide when data is ready
+         });
         });
     </script>
 </body>
