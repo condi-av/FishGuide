@@ -50,13 +50,6 @@ class WeatherService {
     return this.moonPhases[idx];
   }
 
-  calculatePressureTrend(history) {
-    if (!Array.isArray(history) || history.length < 2) return 'stable';
-    const recent = history.slice(-3);
-    const trend = recent[recent.length - 1] - recent[0];
-    return trend > 3 ? 'rising' : trend < -3 ? 'falling' : 'stable';
-  }
-
   calculateBiteForecast(weatherData, fishType = 'general') {
     if (!weatherData || !weatherData.main || !weatherData.weather?.[0] || !weatherData.wind) {
       console.warn('⚠️ Некорректные данные погоды для расчёта клева');
