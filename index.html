@@ -434,7 +434,7 @@
         </div>
         <div>
           <h3 class="font-semibold text-lg mb-4">Популярные регионы</h3>
-          <ul class="space-line">
+          <ul class="space-y-2">
             <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Карелия</a></li>
             <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Тверская область</a></li>
             <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Астраханская область</a></li>
@@ -465,6 +465,30 @@
   <script src="https://unpkg.com/feather-icons"></script>
   <script>
     feather.replace();
+    
+    // Глобальные функции для кнопок
+    function scrollToMap() {
+      document.getElementById('map-section').scrollIntoView({ 
+        behavior: 'smooth' 
+      });
+    }
+    
+    function searchLakes() {
+      const region = document.getElementById('region-filter').value;
+      const fish = document.getElementById('fish-filter').value;
+      const season = document.getElementById('season-filter').value;
+      
+      alert(`Поиск озер:\nРегион: ${region || 'Все'}\nРыба: ${fish || 'Любая'}\nСезон: ${season || 'Круглый год'}`);
+      
+      // В будущем здесь будет переход на страницу с результатами
+      window.location.href = `lakes.html?region=${region}&fish=${fish}&season=${season}`;
+    }
+    
+    // Мобильное меню
+    document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+      const menu = document.getElementById('mobile-menu');
+      menu.classList.toggle('hidden');
+    });
   </script>
 </body>
 </html>
