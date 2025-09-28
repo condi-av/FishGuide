@@ -4,6 +4,7 @@
 let lakesData = [];
 let fishData = [];
 let userLocation = null;
+let dataLoaded = false;
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
@@ -12,7 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function initializeApp() {
     try {
-        // Load data
+        console.log('Initializing FishGuide app...');
+        
+        // Load data first
         await loadData();
         
         // Initialize geolocation
@@ -20,6 +23,7 @@ async function initializeApp() {
         
         // Initialize components based on current page
         const currentPage = getCurrentPage();
+        console.log('Current page:', currentPage);
         
         switch(currentPage) {
             case 'index':
@@ -39,8 +43,7 @@ async function initializeApp() {
                 break;
         }
         
-        // Initialize animations
-        initializeAnimations();
+        console.log('App initialized successfully');
         
     } catch (error) {
         console.error('Error initializing app:', error);
@@ -50,37 +53,70 @@ async function initializeApp() {
 // Load data from JSON
 async function loadData() {
     try {
+        console.log('Loading data from data.json...');
         const response = await fetch('data.json');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
         lakesData = data.lakes || [];
         fishData = data.fish || [];
         
-        console.log('Loaded data:', { lakes: lakesData.length, fish: fishData.length });
+        console.log(`Loaded ${lakesData.length} lakes and ${fishData.length} fish`);
+        
+        // Update global data object
+        window.FishGuide = window.FishGuide || {};
+        window.FishGuide.lakesData = lakesData;
+        window.FishGuide.fishData = fishData;
+        window.FishGuide.userLocation = userLocation;
+        
+        dataLoaded = true;
         
     } catch (error) {
         console.error('Error loading data:', error);
-        // Use generated data as fallback
+        // Use fallback data
         lakesData = generateAdditionalLakes([]);
         fishData = generateAdditionalFish([]);
+        
+        window.FishGuide = window.FishGuide || {};
+        window.FishGuide.lakesData = lakesData;
+        window.FishGuide.fishData = fishData;
+        window.FishGuide.userLocation = userLocation;
+        
+        dataLoaded = true;
     }
 }
 
 // Generate additional lakes data (fallback)
 function generateAdditionalLakes(existingLakes) {
+    console.log('Generating fallback lakes data...');
     const additionalLakes = [
         {
-            "id": 11,
-            "name": "Озеро Топозеро",
-            "region": "Карелия",
-            "rating": 4.2,
-            "description": "Живописное карельское озеро с чистой водой и богатой фауной.",
-            "fish_species": ["Щука", "Окунь", "Лещ", "Язь", "Плотва", "Судак"],
+            "id": 1,
+            "name": "Озеро Селигер",
+            "region": "Тверская область",
+            "rating": 4.8,
+            "description": "Одно из крупнейших и живописнейших озер Тверской области.",
+            "fish_species": ["Щука", "Окунь", "Лещ", "Судак", "Язь", "Плотва"],
+            "best_season": ["Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь"],
+            "coordinates": { "lat": 57.2, "lon": 33.1 },
+            "infrastructure": ["База отдыха", "Парковка", "Прокат лодок", "Кафе"],
+            "popularity": 1
+        },
+        {
+            "id": 2,
+            "name": "Озеро Байкал", 
+            "region": "Иркутская область",
+            "rating": 4.9,
+            "description": "Величайшее озеро мира с уникальной экосистемой.",
+            "fish_species": ["Омуль", "Хариус", "Ленок", "Таймень", "Щука", "Окунь"],
             "best_season": ["Июнь", "Июль", "Август", "Сентябрь"],
-            "coordinates": { "lat": 62.1, "lon": 34.2 },
-            "infrastructure": ["Базы отдыха", "Кемпинги", "Пирсы"],
-            "popularity": 11
+            "coordinates": { "lat": 53.5, "lon": 108.2 },
+            "infrastructure": ["Гостиницы", "Базы отдыха", "Экскурсии", "Рестораны"],
+            "popularity": 2
         }
-        // ... остальные озера из вашего файла
     ];
     
     return [...existingLakes, ...additionalLakes];
@@ -88,18 +124,28 @@ function generateAdditionalLakes(existingLakes) {
 
 // Generate additional fish data (fallback)
 function generateAdditionalFish(existingFish) {
+    console.log('Generating fallback fish data...');
     const additionalFish = [
         {
-            "id": 6,
-            "name": "Голавль",
-            "type": "мирная",
-            "description": "Крупная мирная рыба с серебристым боком.",
-            "habitat": "Быстрые реки с каменистым дном",
-            "tackle_recommendations": "Легкий спиннинг, леска 0.14-0.20мм",
-            "best_biting_time": "Утро и вечер",
-            "seasons": ["Весна", "Лето"]
+            "id": 1,
+            "name": "Щука",
+            "type": "хищная",
+            "description": "Крупная хищная рыба с длинным телом и острой пастью.",
+            "habitat": "Предпочитает стоячие водоемы с зарослями тростника.",
+            "tackle_recommendations": "Спиннинг среднего класса, прочная плетеная леска 0.15-0.25мм",
+            "best_biting_time": "Раннее утро и вечер в теплые месяцы",
+            "seasons": ["Весна", "Осень"]
+        },
+        {
+            "id": 2, 
+            "name": "Окунь",
+            "type": "хищная",
+            "description": "Полосатая хищная рыба среднего размера.",
+            "habitat": "Живет как в стоячих, так и в проточных водоемах.",
+            "tackle_recommendations": "Легкий спиннинг или поплавочная удочка, леска 0.12-0.18мм",
+            "best_biting_time": "Круглый год, особенно активен зимой",
+            "seasons": ["Зима", "Весна", "Лето", "Осень"]
         }
-        // ... остальные рыбы из вашего файла
     ];
     
     return [...existingFish, ...additionalFish];
@@ -128,22 +174,45 @@ function initializeGeolocation() {
                     lon: position.coords.longitude
                 };
                 console.log('User location:', userLocation);
+                
+                // Update global object
+                if (window.FishGuide) {
+                    window.FishGuide.userLocation = userLocation;
+                }
             },
             function(error) {
                 console.log('Geolocation error:', error);
                 // Set default location (Moscow)
                 userLocation = { lat: 55.7558, lon: 37.6173 };
+                if (window.FishGuide) {
+                    window.FishGuide.userLocation = userLocation;
+                }
             }
         );
     } else {
         userLocation = { lat: 55.7558, lon: 37.6173 };
+        if (window.FishGuide) {
+            window.FishGuide.userLocation = userLocation;
+        }
     }
 }
 
 // Initialize home page
 function initializeHomePage() {
     console.log('Initializing home page...');
-    initializePopularLakesSlider();
+    
+    // Wait for data to be loaded
+    if (lakesData.length > 0) {
+        initializePopularLakesSlider();
+    } else {
+        // Wait for data
+        const checkInterval = setInterval(() => {
+            if (lakesData.length > 0) {
+                clearInterval(checkInterval);
+                initializePopularLakesSlider();
+            }
+        }, 100);
+    }
 }
 
 // Initialize popular lakes slider
@@ -156,20 +225,24 @@ function initializePopularLakesSlider() {
     if (lakesList) {
         lakesList.innerHTML = popularLakes.map(lake => createLakeCard(lake)).join('');
         
-        // Initialize Splide slider
+        // Initialize Splide slider if available
         if (typeof Splide !== 'undefined') {
-            new Splide('#popular-lakes-slider', {
-                type: 'loop',
-                perPage: 3,
-                perMove: 1,
-                gap: '2rem',
-                autoplay: true,
-                interval: 4000,
-                breakpoints: {
-                    768: { perPage: 1 },
-                    1024: { perPage: 2 }
-                }
-            }).mount();
+            try {
+                new Splide('#popular-lakes-slider', {
+                    type: 'loop',
+                    perPage: 3,
+                    perMove: 1,
+                    gap: '2rem',
+                    autoplay: true,
+                    interval: 4000,
+                    breakpoints: {
+                        768: { perPage: 1 },
+                        1024: { perPage: 2 }
+                    }
+                }).mount();
+            } catch (error) {
+                console.error('Splide initialization error:', error);
+            }
         }
     }
 }
@@ -210,34 +283,6 @@ function createLakeCard(lake) {
     `;
 }
 
-// Initialize animations
-function initializeAnimations() {
-    // Simple fade-in animation for cards
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = '1';
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    });
-
-    document.querySelectorAll('.card-hover').forEach(el => {
-        el.style.opacity = '0';
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(el);
-    });
-}
-
-// Toggle mobile menu
-function toggleMobileMenu() {
-    const menu = document.getElementById('mobile-menu');
-    if (menu) {
-        menu.classList.toggle('hidden');
-    }
-}
-
 // Utility functions
 function calculateDistance(coord1, coord2) {
     if (!coord1 || !coord2) return null;
@@ -260,21 +305,39 @@ function formatDistance(distance) {
     return `${distance.toFixed(1)}км`;
 }
 
-// Export functions and data for use in other pages
-window.FishGuide = {
-    lakesData: [],
-    fishData: [],
-    userLocation: null,
-    createLakeCard,
-    formatDistance,
-    calculateDistance,
-    toggleMobileMenu
-};
+// Toggle mobile menu
+function toggleMobileMenu() {
+    const menu = document.getElementById('mobile-menu');
+    if (menu) {
+        menu.classList.toggle('hidden');
+    }
+}
 
-// Initialize data after load
-loadData().then(() => {
-    window.FishGuide.lakesData = lakesData;
-    window.FishGuide.fishData = fishData;
-    window.FishGuide.userLocation = userLocation;
-    console.log('FishGuide data initialized');
-});
+// Export functions and data for use in other pages
+window.FishGuide = window.FishGuide || {};
+window.FishGuide.createLakeCard = createLakeCard;
+window.FishGuide.formatDistance = formatDistance;
+window.FishGuide.calculateDistance = calculateDistance;
+window.FishGuide.toggleMobileMenu = toggleMobileMenu;
+
+// Check if data is ready every 100ms and initialize pages
+let dataCheckInterval = setInterval(() => {
+    if (dataLoaded && window.FishGuide.lakesData && window.FishGuide.lakesData.length > 0) {
+        clearInterval(dataCheckInterval);
+        
+        // Initialize specific page functions if they exist
+        const currentPage = getCurrentPage();
+        if (currentPage === 'lakes' && typeof initializeLakesPage === 'function') {
+            initializeLakesPage();
+        }
+        if (currentPage === 'fish-guide' && typeof initializeFishGuide === 'function') {
+            initializeFishGuide();
+        }
+        if (currentPage === 'tackle-calculator' && typeof initializeTackleCalculator === 'function') {
+            initializeTackleCalculator();
+        }
+        if (currentPage === 'lake-detail' && typeof initializeLakeDetailPage === 'function') {
+            initializeLakeDetailPage();
+        }
+    }
+}, 100);
