@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Калькулятор снастей - FishGuide</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    // Disable CDN warning
+    tailwind.config = {
+        corePlugins: {
+            preflight: false,
+        }
+    }
+    </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -68,10 +76,10 @@
             <div class="mb-8">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium text-slate-600">Прогресс</span>
-                    <span id="progress-text" class="text-sm font-medium text-slate-600">Шаг 1 из 2</span>
+                    <span id="progress-text" class="text-sm font-medium text-slate-600">Шаг 1 из 3</span>
                 </div>
                 <div class="w-full bg-slate-200 rounded-full h-2">
-                    <div id="progress-bar" class="progress-bar bg-gradient-to-r from-blue-600 to-blue-800 h-2 rounded-full" style="width: 50%"></div>
+                    <div id="progress-bar" class="progress-bar bg-gradient-to-r from-blue-600 to-blue-800 h-2 rounded-full" style="width: 33%"></div>
                 </div>
             </div>
 
@@ -260,6 +268,19 @@
             fishData = window.FishGuide?.fishData || [];
             loadFishOptions();
             setupEventListeners();
+            
+            // Check for URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('fish')) {
+                const fishName = urlParams.get('fish');
+                // Auto-select fish from URL parameter
+                setTimeout(() => {
+                    const fishElement = document.querySelector(`[data-fish="${fishName}"]`);
+                    if (fishElement) {
+                        selectFish(fishElement);
+                    }
+                }, 500);
+            }
         }
 
         // Load fish options
@@ -428,14 +449,16 @@
             container.innerHTML = recommendations.map(rec => createRecommendationCard(rec)).join('');
 
             // Animate recommendations
-            anime({
-                targets: '.recommendation-card',
-                opacity: [0, 1],
-                translateY: [20, 0],
-                delay: anime.stagger(100),
-                duration: 600,
-                easing: 'easeOutQuart'
-            });
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: '.recommendation-card',
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    delay: anime.stagger(100),
+                    duration: 600,
+                    easing: 'easeOutQuart'
+                });
+            }
         }
 
         // Get recommendations
@@ -595,12 +618,11 @@
             menu.classList.toggle('hidden');
         }
 
-             // Initialize when DOM is loaded
-             document.addEventListener('DOMContentLoaded', function() {
-              console.log('Fish guide page loaded, waiting for data...');
-    
-                   // The main.js will automatically call initializeFishGuide when data is ready
-               });
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Tackle calculator page loaded, waiting for data...');
+            
+            // The main.js will automatically call initializeTackleCalculator when data is ready
         });
     </script>
 </body>
