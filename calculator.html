@@ -6,20 +6,17 @@
     <title>Калькулятор снастей - FishGuide</title>
     <meta name="description" content="Подберите оптимальные рыболовные снасти под ваши условия рыбалки. Профессиональные рекомендации.">
     
-    <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Core Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
     
-    <!-- Custom Modules -->
     <script src="weather-service.js"></script>
     
     <script>
+        // Конфигурация Tailwind CSS (взята из других файлов проекта)
         tailwind.config = {
             theme: {
                 extend: {
@@ -30,9 +27,7 @@
                     colors: {
                         'lake-blue': '#1e3a8a',
                         'sunset-orange': '#f97316',
-                        'nature-green': '#059669',
-                        'deep-water': '#0f172a',
-                        'mist-gray': '#64748b',
+                        'accent-green': '#059669',
                     }
                 }
             }
@@ -40,349 +35,154 @@
     </script>
     
     <style>
-        .slider-container {
-            position: relative;
-        }
-        
-        .slider {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 8px;
-            border-radius: 5px;
-            background: #e2e8f0;
-            outline: none;
-        }
-        
-        .slider::-webkit-slider-thumb {
+        /* Стили для ползунка, чтобы он выглядел красиво */
+        #budget-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
+            width: 16px;
+            height: 16px;
             background: #1e3a8a;
             cursor: pointer;
-        }
-        
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
             border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        #budget-slider::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
             background: #1e3a8a;
             cursor: pointer;
-            border: none;
-        }
-        
-        .recommendation-card {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.6s ease;
-        }
-        
-        .recommendation-card.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .calculator-bg {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-        }
-        
-        .result-animation {
-            animation: slideInUp 0.8s ease-out;
-        }
-        
-        @keyframes slideInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
         }
     </style>
 </head>
-<body class="font-body bg-slate-50">
-    <!-- Navigation -->
-    <nav class="fixed top-0 w-full bg-white/95 backdrop-blur-sm z-50 border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-2">
-                    <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">🎣</span>
+<body class="bg-gray-50 font-body text-slate-700">
+
+    <header class="bg-white shadow-md sticky top-0 z-10">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="index.html" class="text-3xl font-display font-bold text-lake-blue">FishGuide</a>
+            <nav class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-slate-600 hover:text-lake-blue transition-colors">Главная</a>
+                <a href="lakes.html" class="text-slate-600 hover:text-lake-blue transition-colors">Каталог озер</a>
+                <a href="calculator.html" class="text-lake-blue font-semibold border-b-2 border-lake-blue pb-1">Калькулятор снастей</a>
+                <a href="fish-guide.html" class="text-slate-600 hover:text-lake-blue transition-colors">Справочник рыб</a>
+            </nav>
+            <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md hover:bg-gray-100 transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-xl py-2 px-4 border-t border-gray-100">
+            <a href="index.html" class="block py-2 text-slate-600 hover:bg-gray-50">Главная</a>
+            <a href="lakes.html" class="block py-2 text-slate-600 hover:bg-gray-50">Каталог озер</a>
+            <a href="calculator.html" class="block py-2 text-lake-blue font-semibold border-l-4 border-lake-blue pl-2 bg-gray-50">Калькулятор снастей</a>
+            <a href="fish-guide.html" class="block py-2 text-slate-600 hover:bg-gray-50">Справочник рыб</a>
+        </div>
+    </header>
+
+    <main class="py-16">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h1 class="text-4xl md:text-5xl font-display font-extrabold text-slate-900 text-center mb-4">
+                Калькулятор рыболовных снастей
+            </h1>
+            <p class="text-center text-xl text-slate-600 mb-12">
+                Получите персональные рекомендации по удилищам, катушкам и приманкам.
+            </p>
+
+            <div id="error-message-container" class="hidden">
+                </div>
+
+            <form id="calculator-form" class="space-y-8 bg-white p-8 md:p-10 rounded-2xl shadow-2xl shadow-lake-blue/10">
+
+                <div class="bg-gray-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="text-2xl font-display font-bold text-slate-900 mb-4 flex items-center">
+                        <span class="text-lake-blue text-4xl mr-3">1.</span>
+                        Кого будем ловить?
+                    </h3>
+                    <select 
+                        id="fish-select" 
+                        name="fish" 
+                        required 
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:border-lake-blue focus:ring focus:ring-lake-blue/50 transition duration-150 text-lg"
+                    >
+                        <option value="">-- Выберите вид рыбы --</option>
+                        <option value="pike">Щука (Хищник)</option>
+                        <option value="perch">Окунь (Мелкий хищник)</option>
+                        <option value="carp">Карп (Крупная мирная)</option>
+                        <option value="bream">Лещ/Плотва (Мелкая мирная)</option>
+                    </select>
+                </div>
+
+                <div class="bg-gray-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="text-2xl font-display font-bold text-slate-900 mb-4 flex items-center">
+                        <span class="text-lake-blue text-4xl mr-3">2.</span>
+                        Когда едем на рыбалку?
+                    </h3>
+                    <select 
+                        id="season-select" 
+                        name="season" 
+                        required
+                        class="w-full p-3 border border-slate-300 rounded-lg focus:border-lake-blue focus:ring focus:ring-lake-blue/50 transition duration-150 text-lg"
+                    >
+                        <option value="">-- Выберите сезон --</option>
+                        <option value="spring">Весна</option>
+                        <option value="summer">Лето</option>
+                        <option value="autumn">Осень</option>
+                        <option value="winter">Зима</option>
+                    </select>
+                </div>
+                
+                <div class="bg-gray-50 p-6 rounded-xl border border-slate-200">
+                    <h3 class="text-2xl font-display font-bold text-slate-900 mb-4 flex items-center">
+                        <span class="text-lake-blue text-4xl mr-3">3.</span>
+                        Ваш примерный бюджет
+                    </h3>
+                    
+                    <div class="flex justify-between items-center mb-3">
+                        <span id="budget-value" class="text-2xl font-mono font-semibold text-sunset-orange">10 000 ₽</span>
                     </div>
-                    <span class="font-display font-bold text-xl text-slate-800">FishGuide</span>
+                    
+                    <input 
+                        type="range" 
+                        id="budget-slider" 
+                        name="budget" 
+                        min="1000" 
+                        max="50000" 
+                        step="1000" 
+                        value="10000" 
+                        class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer range-lg transition-colors"
+                        style="background: linear-gradient(to right, #1e3a8a 0%, #1e3a8a 18%, #e2e8f0 18%, #e2e8f0 100%);"
+                    >
+                    
+                    <div class="flex justify-between text-sm text-slate-500 mt-2">
+                        <span>1 000 ₽</span>
+                        <span>50 000+ ₽</span>
+                    </div>
                 </div>
-                
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="index.html" class="text-slate-600 hover:text-lake-blue transition-colors">Главная</a>
-                    <a href="lakes.html" class="text-slate-600 hover:text-lake-blue transition-colors">Каталог озер</a>
-                    <a href="calculator.html" class="text-lake-blue font-medium border-b-2 border-lake-blue pb-1">Калькулятор</a>
-                    <a href="fish-guide.html" class="text-slate-600 hover:text-lake-blue transition-colors">Справочник</a>
-                </div>
-                
-                <div class="md:hidden">
-                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-lake-blue">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                        </svg>
+
+                <div class="text-center pt-4">
+                    <button 
+                        type="submit" 
+                        class="bg-lake-blue text-white py-4 px-10 rounded-xl font-bold text-xl hover:bg-lake-blue/90 transition-colors shadow-2xl shadow-lake-blue/50 transform hover:scale-105"
+                    >
+                        Подберите снасти 🎣
                     </button>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-slate-200">
-            <div class="px-4 py-4 space-y-3">
-                <a href="index.html" class="block text-slate-600 hover:text-lake-blue">Главная</a>
-                <a href="lakes.html" class="block text-slate-600 hover:text-lake-blue">Каталог озер</a>
-                <a href="calculator.html" class="block text-lake-blue font-medium">Калькулятор</a>
-                <a href="fish-guide.html" class="block text-slate-600 hover:text-lake-blue">Справочник</a>
-            </div>
-        </div>
-    </nav>
+            </form>
 
-    <!-- Header Section -->
-    <section class="pt-24 pb-12 bg-gradient-to-br from-lake-blue to-deep-water">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center text-white">
-                <h1 class="font-display text-5xl font-bold mb-4">Калькулятор снастей</h1>
-                <p class="text-xl text-blue-100 max-w-2xl mx-auto">
-                    Подберите оптимальные рыболовные снасти под ваши условия рыбалки. 
-                    Получите профессиональные рекомендации за минуты.
-                </p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Calculator Section -->
-    <section class="py-12 calculator-bg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-3 gap-8">
-                <!-- Calculator Form -->
-                <div class="lg:col-span-2">
-                    <div class="bg-white rounded-2xl shadow-lg p-8">
-                        <h2 class="font-display text-2xl font-bold text-slate-800 mb-6">Параметры рыбалки</h2>
-                        
-                        <form id="calculator-form" class="space-y-6">
-                            <!-- Target Fish -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-3">Целевая рыба</label>
-                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="fish" value="pike" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Щука</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="fish" value="perch" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Окунь</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="fish" value="carp" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Карп</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="fish" value="bream" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Лещ</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="fish" value="salmon" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Лосось</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="fish" value="catfish" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Сом</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Fishing Location -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-3">Место рыбалки</label>
-                                <select name="location" class="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-lake-blue focus:border-transparent">
-                                    <option value="">Выберите место</option>
-                                    <option value="lake">Озеро</option>
-                                    <option value="river">Река</option>
-                                    <option value="reservoir">Водохранилище</option>
-                                    <option value="pond">Пруд</option>
-                                    <option value="sea">Море/Берег</option>
-                                </select>
-                            </div>
-
-                            <!-- Season -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-3">Время года</label>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="season" value="spring" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Весна</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="season" value="summer" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Лето</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="season" value="autumn" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Осень</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="season" value="winter" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Зима</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Experience Level -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-3">Опыт рыбака</label>
-                                <div class="grid grid-cols-3 gap-3">
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="experience" value="beginner" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Новичок</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="experience" value="intermediate" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Средний</span>
-                                    </label>
-                                    <label class="flex items-center p-3 border border-slate-300 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors">
-                                        <input type="radio" name="experience" value="advanced" class="mr-3 text-lake-blue">
-                                        <span class="text-sm font-medium">Профи</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Budget Range -->
-                            <div>
-                                <label class="block text-sm font-semibold text-slate-700 mb-3">Бюджет</label>
-                                <div class="slider-container">
-                                    <input type="range" id="budget-slider" class="slider" min="1000" max="50000" value="10000" step="1000">
-                                    <div class="flex justify-between text-sm text-slate-600 mt-2">
-                                        <span>1,000 ₽</span>
-                                        <span id="budget-value" class="font-semibold text-lake-blue">10,000 ₽</span>
-                                        <span>50,000 ₽</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Submit Button -->
-                            <button type="submit" class="w-full bg-lake-blue hover:bg-blue-800 text-white px-6 py-4 rounded-xl font-semibold text-lg transition-all duration-300">
-                                Подобрать снасти
-                            </button>
-                        </form>
-                    </div>
+            <div id="recommendation-results" class="mt-12">
                 </div>
 
-                <!-- Results Panel -->
-                <div class="lg:col-span-1">
-                    <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-24">
-                        <h3 class="font-display text-xl font-bold text-slate-800 mb-4">Рекомендации</h3>
-                        <div id="results-container">
-                            <div class="text-center text-slate-500 py-8">
-                                <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                                    </svg>
-                                </div>
-                                <p class="text-sm">Заполните форму слева, чтобы получить персональные рекомендации</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
-    </section>
+    </main>
 
-    <!-- Gear Comparison Section -->
-    <section class="py-16 bg-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="font-display text-4xl font-bold text-slate-800 mb-4">Сравнение снастей</h2>
-                <p class="text-xl text-slate-600">Понимание различий между типами снастей</p>
-            </div>
-            
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-lake-blue/10 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🎣</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Спиннинг</h3>
-                    <p class="text-slate-600 mb-4">Универсальная снасть для ловли хищной рыбы. Подходит для разных условий и типов водоемов.</p>
-                    <ul class="space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Хорошо для щуки и окуня
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Работает в любое время года
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Различные техники ловли
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-sunset-orange/10 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🎯</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Фидер</h3>
-                    <p class="text-slate-600 mb-4">Идеален для донной ловли мирной рыбы на дальних дистанциях. Отличный выбор для карпа и леща.</p>
-                    <ul class="space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Отлично для карпа и леща
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Дальний заброс
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Чувствительная сигнализация
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="bg-slate-50 rounded-2xl p-6">
-                    <div class="w-16 h-16 bg-nature-green/10 rounded-2xl flex items-center justify-center mb-4">
-                        <span class="text-3xl">🌊</span>
-                    </div>
-                    <h3 class="font-display text-xl font-bold text-slate-800 mb-3">Поплавочная удочка</h3>
-                    <p class="text-slate-600 mb-4">Классическая снасть для спокойной рыбалки. Проста в использовании, подходит для начинающих.</p>
-                    <ul class="space-y-2 text-sm text-slate-600">
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Простота использования
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Для мирной рыбы
-                        </li>
-                        <li class="flex items-center">
-                            <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                            Минимальные затраты
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-slate-800 text-white py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid md:grid-cols-4 gap-8">
+    <footer class="bg-slate-800 text-white mt-16 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 border-b border-slate-700 pb-8 mb-8">
                 <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <div class="w-8 h-8 bg-lake-blue rounded-full flex items-center justify-center">
-                            <span class="text-white font-bold text-sm">🎣</span>
-                        </div>
-                        <span class="font-display font-bold text-xl">FishGuide</span>
-                    </div>
-                    <p class="text-slate-300">Ваш надежный спутник в мире рыбалки. Находите лучшие места, получайте прогнозы и улучшайте свои навыки.</p>
+                    <h3 class="font-display font-bold text-2xl mb-4">FishGuide</h3>
+                    <p class="text-slate-400 text-sm">Ваш надежный справочник для идеальной рыбалки.</p>
                 </div>
                 
                 <div>
@@ -390,8 +190,8 @@
                     <ul class="space-y-2">
                         <li><a href="index.html" class="text-slate-300 hover:text-white transition-colors">Главная</a></li>
                         <li><a href="lakes.html" class="text-slate-300 hover:text-white transition-colors">Каталог озер</a></li>
-                        <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор</a></li>
-                        <li><a href="fish-guide.html" class="text-slate-300 hover:text-white transition-colors">Справочник</a></li>
+                        <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор снастей</a></li>
+                        <li><a href="fish-guide.html" class="text-slate-300 hover:text-white transition-colors">Справочник рыб</a></li>
                     </ul>
                 </div>
                 
@@ -421,7 +221,7 @@
         </div>
     </footer>
 
-    <script src="src/calculator.js"></script> 
+    <script src="src/calculator.js"></script>
     
 </body>
 </html>
