@@ -369,14 +369,16 @@
             fishGrid.innerHTML = filteredFish.map(fish => createFishCard(fish)).join('');
 
             // Animate cards
-            anime({
-                targets: '.fish-card',
-                opacity: [0, 1],
-                translateY: [20, 0],
-                delay: anime.stagger(50),
-                duration: 400,
-                easing: 'easeOutQuart'
-            });
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: '.fish-card',
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    delay: anime.stagger(50),
+                    duration: 400,
+                    easing: 'easeOutQuart'
+                });
+            }
         }
 
         // Create fish card
@@ -488,12 +490,11 @@
             menu.classList.toggle('hidden');
         }
 
-             // Initialize when DOM is loaded
-           document.addEventListener('DOMContentLoaded', function() {
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
             console.log('Fish guide page loaded, waiting for data...');
-    
-        // The main.js will automatically call initializeFishGuide when data is ready
-         });
+            
+            // The main.js will automatically call initializeFishGuide when data is ready
         });
     </script>
 </body>
