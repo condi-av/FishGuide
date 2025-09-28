@@ -1,179 +1,204 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Справочник рыб - FishGuide</title>
-    <meta name="description" content="Полный справочник видов рыб в России. Описание, среда обитания, способы ловли и сезонность.">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet">
-    
-<!-- ✅ Правильный порядок -->
-   <script src="src/weather-service.js"></script>
-   <script src="src/fish_peaceful.js"></script>
-   <script src="src/fish_predatory.js"></script>
-   <script src="src/fish-guide.js"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'display': ['Playfair Display', 'serif'],
-                        'body': ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        'lake-blue': '#1e3a8a',
-                        'sunset-orange': '#f97316',
-                        'forest-green': '#059669',
-                        'water-light': '#bfdbfe',
-                        'sand-light': '#fef3c7'
-                    }
-                }
-            }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Справочник рыб - FishGuide</title>
+  <meta name="description" content="Полный справочник видов рыб в России. Описание, среда обитания, способы ловли и сезонность." />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Anime.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+  <!-- Splide slider -->
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css" rel="stylesheet" />
+
+  <!-- Weather -->
+  <script src="src/weather-service.js"></script>
+
+  <!-- Tailwind config -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Playfair Display', 'serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            'lake-blue': '#1e3a8a',
+            'sunset-orange': '#f97316',
+            'forest-green': '#059669',
+          }
         }
-    </script>
+      }
+    }
+  </script>
+
+  <style>
+    .card-hover { transition: all 0.3s ease; }
+    .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+    .custom-marker { background: #1e3a8a; width: 16px; height: 16px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+  </style>
 </head>
+
 <body class="bg-gray-50 font-body text-slate-700">
-    
-    <header class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <a href="index.html" class="text-2xl font-display font-bold text-lake-blue">FishGuide</a>
-                
-                <nav class="hidden md:flex space-x-8">
-                    <a href="index.html" class="text-slate-600 hover:text-lake-blue transition-colors">Главная</a>
-                    <a href="lakes.html" class="text-slate-600 hover:text-lake-blue transition-colors">Каталог озер</a>
-                    <a href="calculator.html" class="text-slate-600 hover:text-lake-blue transition-colors">Калькулятор снастей</a>
-                    <a href="fish-guide.html" class="text-lake-blue font-semibold border-b-2 border-lake-blue pb-1">Справочник рыб</a>
-                </nav>
-                
-                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-gray-100 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        
-        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200">
-            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                <a href="index.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-gray-50">Главная</a>
-                <a href="lakes.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-gray-50">Каталог озер</a>
-                <a href="calculator.html" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-gray-50">Калькулятор снастей</a>
-                <a href="fish-guide.html" class="block px-3 py-2 rounded-md text-base font-medium text-lake-blue bg-gray-50">Справочник рыб</a>
-            </div>
-        </div>
-    </header>
 
-    <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <h1 class="text-4xl font-display font-bold text-slate-900 mb-8">Полный Справочник Рыб</h1>
-        
-        <section class="bg-white p-6 rounded-xl shadow-lg mb-12">
-            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
-                
-                <div class="w-full md:w-1/3">
-                    <label for="search-input" class="sr-only">Поиск рыбы</label>
-                    <div class="relative">
-                        <input type="text" id="search-input" placeholder="Поиск по названию или описанию..." 
-                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-lake-blue focus:border-lake-blue transition duration-150">
-                        <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-                
-                <div class="w-full md:w-2/3 flex flex-wrap justify-end space-x-2">
-                    <button class="category-filter active bg-lake-blue text-white hover:bg-lake-blue/90 font-medium py-2 px-4 rounded-lg transition-colors duration-150" data-category="all">Все (45)</button>
-                    <button class="category-filter bg-gray-100 text-slate-700 hover:bg-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-150" data-category="predator">Хищные</button>
-                    <button class="category-filter bg-gray-100 text-slate-700 hover:bg-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-150" data-category="peaceful">Мирные</button>
-                    <select id="sort-select" class="bg-gray-100 text-slate-700 hover:bg-gray-200 font-medium py-2 px-4 rounded-lg transition-colors duration-150 border-none">
-                        <option value="name">Сортировка: По названию</option>
-                        <option value="bestTime">Сортировка: По сезону</option>
-                    </select>
-                </div>
-            </div>
-        </section>
-
-        <section id="fish-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-            </section>
-        
-        <div class="text-center mt-12">
-            <p class="text-slate-500"><span id="results-count">45</span> результатов</p>
-        </div>
-        
-    </main>
-
-    <div id="fish-modal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300 relative">
-            
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800 transition-colors z-10">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-            
-            <div id="fish-modal-content" class="p-8">
-                </div>
-            
-        </div>
+  <!-- Header -->
+  <header class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <a href="index.html" class="text-2xl font-display font-bold text-lake-blue">FishGuide</a>
+        <nav class="hidden md:flex space-x-8">
+          <a href="index.html" class="text-slate-600 hover:text-lake-blue transition-colors">Главная</a>
+          <a href="lakes.html" class="text-slate-600 hover:text-lake-blue transition-colors">Каталог озер</a>
+          <a href="calculator.html" class="text-slate-600 hover:text-lake-blue transition-colors">Калькулятор</a>
+          <a href="fish-guide.html" class="text-lake-blue font-semibold border-b-2 border-lake-blue pb-1">Справочник рыб</a>
+        </nav>
+        <button id="mobile-menu-btn" class="md:hidden p-2 rounded-md text-slate-600 hover:bg-gray-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 px-4 py-3 space-y-2">
+        <a href="index.html" class="block text-slate-600 hover:bg-gray-50 px-3 py-2 rounded">Главная</a>
+        <a href="lakes.html" class="block text-slate-600 hover:bg-gray-50 px-3 py-2 rounded">Каталог озер</a>
+        <a href="calculator.html" class="block text-slate-600 hover:bg-gray-50 px-3 py-2 rounded">Калькулятор</a>
+        <a href="fish-guide.html" class="block text-lake-blue font-semibold bg-gray-50 px-3 py-2 rounded">Справочник рыб</a>
+      </div>
     </div>
-    
-    <footer class="bg-slate-800 text-white mt-20">
-        <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="font-display font-bold text-2xl mb-4 text-lake-blue">FishGuide</h3>
-                    <p class="text-slate-400 text-sm">Ваш надежный помощник в мире рыбалки.</p>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Навигация</h3>
-                    <ul class="space-y-2">
-                        <li><a href="index.html" class="text-slate-300 hover:text-white transition-colors">Главная</a></li>
-                        <li><a href="lakes.html" class="text-slate-300 hover:text-white transition-colors">Каталог озер</a></li>
-                        <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор снастей</a></li>
-                        <li><a href="fish-guide.html" class="text-white font-medium transition-colors">Справочник рыб</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Популярные регионы</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Карелия</a></li>
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Тверская область</a></li>
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Астраханская область</a></li>
-                        <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Иркутская область</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="font-semibold text-lg mb-4">Контакты</h3>
-                    <ul class="space-y-2">
-                        <li class="text-slate-300">📧 info@fishguide.ru</li>
-                        <li class="text-slate-300">📱 +7 (999) 123-45-67</li>
-                        <li class="text-slate-300">🌐 fishguide.ru</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="border-t border-slate-700 mt-8 pt-8 text-center">
-                <p class="text-slate-400">© 2025 FishGuide. Все права защищены. Создано с любовью к рыбалке.</p>
-            </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+
+    <!-- Title -->
+    <section class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-display font-extrabold text-slate-900 mb-4">
+        Полный справочник рыб
+      </h1>
+      <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+        Изучите виды рыб, их повадки, среды обитания и лучшие способы ловли.
+      </p>
+    </section>
+
+    <!-- Search & Filters -->
+    <section class="bg-white rounded-2xl shadow-lg p-6 mb-12">
+      <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <!-- Search -->
+        <div class="w-full md:w-1/3">
+          <label class="sr-only">Поиск рыбы</label>
+          <div class="relative">
+            <input type="text" id="search-input" placeholder="Поиск по названию или описанию..."
+              class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-lake-blue focus:border-transparent" />
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
         </div>
-    </footer>
-    
-<script src="src/main.js"></script>
-    
-<script src="https://unpkg.com/feather-icons"></script>
-<script>
+
+        <!-- Category Filter -->
+        <div class="w-full md:w-auto">
+          <label class="block text-sm font-medium text-slate-700 mb-2">Категория</label>
+          <div class="flex flex-wrap gap-2">
+            <button class="category-filter active bg-lake-blue text-white px-4 py-2 rounded-lg text-sm font-medium" data-category="all">Все</button>
+            <button class="category-filter bg-gray-100 text-slate-700 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium" data-category="predator">Хищные</button>
+            <button class="category-filter bg-gray-100 text-slate-700 hover:bg-gray-200 px-4 py-2 rounded-lg text-sm font-medium" data-category="peaceful">Мирные</button>
+          </div>
+        </div>
+
+        <!-- Sort -->
+        <div class="w-full md:w-auto">
+          <label for="sort-select" class="block text-sm font-medium text-slate-700 mb-2">Сортировка</label>
+          <select id="sort-select" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-lake-blue focus:border-transparent text-sm">
+            <option value="name">По названию</option>
+            <option value="size">По размеру</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Fish Grid -->
+    <section id="fish-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      <!-- Карточки рыб будут вставлены сюда -->
+    </section>
+
+    <!-- Modal -->
+    <div id="fish-modal" class="modal-overlay hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 opacity-0 transition-opacity duration-300">
+      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300 relative">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800 transition-colors">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <div id="fish-modal-content" class="p-8">
+          <!-- Контент модального окна -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="text-center mt-12">
+      <p class="text-slate-500"><span id="results-count">0</span> результатов</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-slate-800 text-white mt-20 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid md:grid-cols-4 gap-8">
+        <div>
+          <h3 class="font-display font-bold text-2xl mb-4 text-lake-blue">FishGuide</h3>
+          <p class="text-slate-300 text-sm">Ваш надёжный помощник в мире рыбалки. Находите лучшие места, получайте прогнозы и улучшайте свои навыки.</p>
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg mb-4">Навигация</h3>
+          <ul class="space-y-2">
+            <li><a href="index.html" class="text-slate-300 hover:text-white transition-colors">Главная</a></li>
+            <li><a href="lakes.html" class="text-slate-300 hover:text-white transition-colors">Каталог озер</a></li>
+            <li><a href="calculator.html" class="text-slate-300 hover:text-white transition-colors">Калькулятор</a></li>
+            <li><a href="fish-guide.html" class="text-white font-medium">Справочник рыб</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg mb-4">Популярные регионы</h3>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Карелия</a></li>
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Тверская область</a></li>
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Астраханская область</a></li>
+            <li><a href="#" class="text-slate-300 hover:text-white transition-colors">Иркутская область</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="font-semibold text-lg mb-4">Контакты</h3>
+          <ul class="space-y-2">
+            <li class="text-slate-300">📧 info@fishguide.ru</li>
+            <li class="text-slate-300">📱 +7 (999) 123-45-67</li>
+            <li class="text-slate-300">🌐 fishguide.ru</li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-slate-700 mt-8 pt-8 text-center">
+        <p class="text-slate-400">© 2025 FishGuide. Все права защищены. Создано с любовью к рыбалке.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="src/weather-service.js"></script>
+  <script src="src/fish_peaceful.js"></script>
+  <script src="src/fish_predatory.js"></script>
+  <script src="src/fish-guide.js"></script>
+
+  <!-- Feather icons -->
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script>
     feather.replace();
-</script>
+  </script>
 </body>
 </html>
